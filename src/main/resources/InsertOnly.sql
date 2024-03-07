@@ -1,0 +1,1 @@
+create unlogged table t(val text);
