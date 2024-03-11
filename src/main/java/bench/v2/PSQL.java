@@ -19,8 +19,9 @@ public class PSQL {
 		String conn = "postgresql://" + userName +  ":" + password + "@"  + ds.hosts[hostNum] + ":" + ds.port + "/" + database;
 		
 		InputStream is = PSQL.class.getClassLoader().getResourceAsStream(filename);
-		
-		ProcessBuilder builder = new ProcessBuilder("psql", conn, (is != null) ? "--file=-": "--file=" + filename);
+
+
+        ProcessBuilder builder = new ProcessBuilder("psql", conn, (is != null) ? "--file=-": "--file=" + filename);
 		builder.redirectOutput(Redirect.INHERIT);
 		builder.redirectError(Redirect.INHERIT);
 		
