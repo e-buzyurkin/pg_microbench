@@ -9,7 +9,6 @@ import static bench.V2.*;
 public class Append {
     private static final Logger logger = LoggerFactory.getLogger(Append.class);
 
-    //TODO add some examples with tables. (1, 1), (1, N) , (N, N)
     public static void main(String[] args) {
 
         args(args);
