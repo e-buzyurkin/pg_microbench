@@ -26,6 +26,6 @@ public class SemiJoin {
                 "select 1 from large union all " +
                 "select 1 from huge", "myTests/Tables.sql");
 
-        TestUtils.testQueries(logger, new String[]{query1, query2});
+        TestUtils.testQueries(logger, SemiJoin.class.getSimpleName(), new String[]{query1, query2});
     }
 }

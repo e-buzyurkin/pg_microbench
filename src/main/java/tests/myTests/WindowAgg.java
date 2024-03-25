@@ -19,6 +19,6 @@ public class WindowAgg {
 
         requireData("select 1 from large", "myTests/Tables.sql");
 
-        TestUtils.testQueries(logger, new String[]{query1, query2});
+        TestUtils.testQueries(logger, WindowAgg.class.getSimpleName(), new String[]{query1, query2});
     }
 }

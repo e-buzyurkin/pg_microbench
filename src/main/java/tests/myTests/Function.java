@@ -18,6 +18,6 @@ public class Function {
         String query1 = "select * from generate_series(1, 5)";
         String query2 = "select * from generate_series(1, 100000)";
 
-        TestUtils.testQueries(logger, new String[]{query1, query2});
+        TestUtils.testQueries(logger, Function.class.getSimpleName(), new String[]{query1, query2});
     }
 }

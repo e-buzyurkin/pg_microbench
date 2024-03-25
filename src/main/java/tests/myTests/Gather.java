@@ -16,6 +16,6 @@ public class Gather {
         String query2 = "select sum(col_1) from huge union all select count(*) from huge";
         requireData("select 1 from huge", "myTests/Tables.sql");
 
-        TestUtils.testQueries(logger, new String[]{query1, query2});
+        TestUtils.testQueries(logger, Gather.class.getSimpleName(), new String[]{query1, query2});
     }
 }
