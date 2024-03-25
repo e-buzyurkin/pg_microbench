@@ -115,7 +115,7 @@ public class V2 {
 	public static List<String> explainResults(String sql, Object... binds) {
 		return select("explain (analyze, verbose, buffers, costs off) " + sql, binds);
 	}
-	
+
 	public static void explain(Logger log, String sql, Object... binds) {
 		List<String> lines = select("explain (analyze, verbose, buffers) " + sql, binds);
 		if (log != null)

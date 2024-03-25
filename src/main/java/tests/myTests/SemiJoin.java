@@ -20,6 +20,7 @@ public class SemiJoin {
         String query2 = "select * from large where large.col_1 in " +
                 "(select huge.col_1 from huge)";
 
+
         requireData("select 1 from medium union all " +
                 "select 1 from small union all " +
                 "select 1 from large union all " +
