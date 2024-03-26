@@ -3,6 +3,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.junit.jupiter.api.Assertions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 
@@ -20,7 +21,7 @@ public class TestUtils {
 
     public static void testQuery(Logger logger, String expectedPlanType, String query, Object... binds) {
         String actualPlanType = getQueryPlanType(query, binds);
-        assert expectedPlanType.equals(actualPlanType);
+        Assertions.assertEquals(expectedPlanType, actualPlanType);
         explain(logger, query);
         parallel((state) -> {
             sql(query);
