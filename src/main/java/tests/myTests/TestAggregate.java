@@ -16,12 +16,11 @@ public class TestAggregate {
 
     @Test
     public void runSmallTablesTests() {
-        String[] args = System.getProperty("args").split(" ");
+        String[] args = System.getProperty("args").split("\\s+");
         args(args);
         String query1 = "select count(*) from small_table";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
-
-        TestUtils.testQueries(logger, TestAggregate.class.getSimpleName(), new String[]{query1});
+        TestUtils.testQueries(logger, TestAggregate.class.getSimpleName().replace("Test", ""), new String[]{query1});
     }
 
     @Test
@@ -31,7 +30,7 @@ public class TestAggregate {
         String query1 = "select count(*) from medium_table";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
 
-        TestUtils.testQueries(logger, TestAggregate.class.getSimpleName(), new String[]{query1});
+        TestUtils.testQueries(logger, TestAggregate.class.getSimpleName().replace("Test", ""), new String[]{query1});
     }
 
     @Test
