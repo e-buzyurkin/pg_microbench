@@ -8,7 +8,7 @@ public class RunTests {
         Values.main(args);
         Function.main(args);
         Append.main(args);
-        Aggregate.main(args);
+        TestAggregate.main(args);
         WindowAgg.main(args);
         Gather.main(args);
         SemiJoin.main(args);
