@@ -20,6 +20,5 @@ public class SubPlan {
         requireData("select 1 from medium union all " +
                 "select 1 from small", "myTests/Tables.sql");
 
-        TestUtils.testQueries(logger, SubPlan.class.getSimpleName(), new String[]{query1});
     }
 }

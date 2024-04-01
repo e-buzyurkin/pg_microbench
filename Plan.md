@@ -1,13 +1,13 @@
 ## Запросы:
 
 | Запросы                 | Приоритетность | Готовность | Статус |
-| ----------------------- | -------------- | ---------- | ------ |
+|-------------------------| -------------- | ------ | ------ |
 | 1. Result               |                | ✖   |        |
-| 2. Values Scan          |                | ✅          |        |
-| 3. Function Scan        |                | ✅          |        |
+| 2. Values Scan          |                | ✖       |        |
+| 3. Function Scan        |                | ✖       |        |
 | 4. Incremental Sort     |                | ✖   |        |
 | 5. Unique               |                | ✖   |        |
-| 6. Append               |                | ✅          |        |
+| 6. Append               |                | ✖       |        |
 | 7. Merge Append         |                | ✖   |        |
 | 8. Subquery Scan        |                | ✖   |        |
 | 9. HashSetOp            |                | ✖   |        |
@@ -15,13 +15,13 @@
 | 11. Materialize         |                | ✖   |        |
 | 12. Memoize             |                | ✖   |        |
 | 13. Group               |                | ✖   |        |
-| 14. Aggregate           |                | ✅          |        |
+| 14. Aggregate           |                | ✅      |   ✅     |
 | 15. GroupAggregate      |                | ✖   |        |
 | 16. HashAggregate       |                | ✖   |        |
 | 17. MixedAggregate      |                | ✖   |        |
-| 18. WindowAgg           |                | ✅          |        |
+| 18. WindowAgg           |                | ✖       |        |
 | 19. Parallel Seq Scan   |                | ✖   |        |
-| 20. Gather              |                | ✅          |        |
+| 20. Gather              |                | ✅      |   ✅     |
 | 21. Finalize Aggregate  |                | ✖   |        |
 | 22. Gather Merge        |                | ✖   |        |
 | 23. Parallel Append     |                | ✖   |        |
@@ -41,9 +41,10 @@
 | 37. Update              |                | ✖   |        |
 | 38. Delete              |                | ✖   |        |
 | 39. Merge               |                | ✖   |        |
-| 40. Semi Join           | ✅              | ✖   |        |
+| 40. Semi Join           | ✅              | ✖   |   ✅     |
 | 41. Anti Join           | ✅              | ✖   |        |
 | 42. SubPlan             | ✅              | ✖   |        |
+| 42. Hash Join           | ✅              | ✖   |    ✅    |
 
 ## Действия:
 

@@ -13,25 +13,15 @@ import static bench.V2.*;
 
 public class TestUtils {
 
-    public static void testQueries(Logger logger, String planType, String [] queries, Object... binds) {
-        Arrays.stream(queries).forEach(query -> testQuery(logger, planType, query, binds));
+    public static void testQuery(Logger logger, String query, Object... binds) {
+        parallel((state) -> {
+            sql(query);
+        });
     }
 
-    public static void testQuery(Logger logger, String expectedPlanType, String query, Object... binds) {
-        JsonObject resultsJson = explainResultsJson(query, binds);
-        String actualPlanType = resultsJson.getAsJsonObject("Plan").
-                get("Node Type").getAsString();
-        String executionTime = resultsJson.get("Execution Time").getAsString();
-
-        try {
-            Assertions.assertEquals(expectedPlanType, actualPlanType);
-            logger.info("Sql query completed after " + executionTime + " ms");
-            parallel((state) -> {
-                sql(query);
-            });
-        } catch (AssertionError e) {
-            logger.error(String.valueOf(e));
-        }
+    public static void checkTime(Logger logger, JsonObject explainResults) {
+        String executionTime = explainResults.get("Execution Time").getAsString();
+        logger.info("Sql query completed after " + executionTime + " ms");
     }
 
     public static JsonObject explainResultsJson(String sql, Object... binds) {

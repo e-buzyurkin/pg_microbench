@@ -3,6 +3,16 @@ create table small_table
     x integer
 );
 
+create table small_table_1
+(
+    x integer
+);
+
+create table small_table_2
+(
+    x integer
+);
+
 create table small_parent_table
 (
     id   integer primary key,
@@ -47,6 +57,12 @@ create table small_business_table
 
 insert into small_table (x)
 select generate_series(1, 10);
+
+insert into small_table_1 (x)
+select floor(random() * (10-1+1) + 1)::int;
+
+insert into small_table_2 (x)
+select floor(random() * (10-1+1) + 1)::int;
 
 insert into small_parent_table (id, data)
 select generate_series,

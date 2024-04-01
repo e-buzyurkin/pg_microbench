@@ -3,6 +3,16 @@ create table large_table
     x integer
 );
 
+create table large_table_1
+(
+    x integer
+);
+
+create table large_table_2
+(
+    x integer
+);
+
 create table large_parent_table
 (
     id   integer primary key,
@@ -47,6 +57,12 @@ create table large_business_table
 
 insert into large_table (x)
 select generate_series(1, 100000);
+
+insert into large_table_1 (x)
+select floor(random() * (100000-1+1) + 1)::int;
+
+insert into large_table_2 (x)
+select floor(random() * (100000-1+1) + 1)::int;
 
 insert into large_parent_table (id, data)
 select generate_series,

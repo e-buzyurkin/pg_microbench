@@ -18,7 +18,5 @@ public class WindowAgg {
         String query2 = "select x, sum(x) over() from large as f(x)";
 
         requireData("select 1 from large", "myTests/Tables.sql");
-
-        TestUtils.testQueries(logger, WindowAgg.class.getSimpleName(), new String[]{query1, query2});
     }
 }

@@ -2,10 +2,12 @@ package tests.myTests.testUtils;
 
 import java.util.Arrays;
 
+import static bench.V2.sql;
+
 public class RequiredData {
 
     private static final String[] tableNames =
-            {"table", "parent_table", "child_table", "first_partner_table",
+            {"table", "table_1", "table_2", "parent_table", "child_table", "first_partner_table",
                     "second_partner_table", "business_table", "users_table", "profile_table"};
     private static final String[] tableTypes = {"small", "medium", "large", "huge"};
 

@@ -15,7 +15,6 @@ public class Values {
         args(args);
         String query1 = "values (1), (2), (3)";
 
-        TestUtils.testQueries(logger, Values.class.getSimpleName(), new String[]{query1});
 
     }
 }

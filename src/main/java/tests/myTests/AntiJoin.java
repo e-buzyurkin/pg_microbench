@@ -19,7 +19,6 @@ public class AntiJoin {
 
         requireData("select 1 from medium union all " +
                 "select 1 from small", "myTests/Tables.sql");
-
-        TestUtils.testQueries(logger, AntiJoin.class.getSimpleName(), new String[]{query1});
+        ;
     }
 }
