@@ -59,10 +59,12 @@ insert into medium_table (x)
 select generate_series(1, 10000);
 
 insert into medium_table_1 (x)
-select floor(random() * (10000-1+1) + 1)::int;
+select floor(random() * (10000-1+1) + 1)::int
+from generate_series(1, 10000);
 
 insert into medium_table_2 (x)
-select floor(random() * (10000-1+1) + 1)::int;
+select floor(random() * (10000-1+1) + 1)::int
+from generate_series(1, 10000);
 
 insert into medium_parent_table (id, data)
 select generate_series,

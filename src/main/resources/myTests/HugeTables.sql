@@ -59,10 +59,12 @@ insert into huge_table (x)
 select generate_series(1, 1000000);
 
 insert into huge_table_1 (x)
-select floor(random() * (1000000-1+1) + 1)::int;
+select floor(random() * (1000000-1+1) + 1)::int
+from generate_series(1, 1000000);
 
 insert into huge_table_2 (x)
-select floor(random() * (1000000-1+1) + 1)::int;
+select floor(random() * (1000000-1+1) + 1)::int
+from generate_series(1, 1000000);
 
 insert into huge_parent_table (id, data)
 select generate_series,

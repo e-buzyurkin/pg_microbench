@@ -59,10 +59,12 @@ insert into small_table (x)
 select generate_series(1, 10);
 
 insert into small_table_1 (x)
-select floor(random() * (10-1+1) + 1)::int;
+select floor(random() * (10-1+1) + 1)::int
+from generate_series(1, 10);
 
 insert into small_table_2 (x)
-select floor(random() * (10-1+1) + 1)::int;
+select floor(random() * (10-1+1) + 1)::int
+from generate_series(1, 10);
 
 insert into small_parent_table (id, data)
 select generate_series,
