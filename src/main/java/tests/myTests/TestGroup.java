@@ -1,51 +1,43 @@
 package tests.myTests;
 
-
-import com.google.gson.JsonObject;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tests.myTests.testUtils.RequiredData;
 import tests.myTests.testUtils.TestUtils;
 
-import java.util.ArrayList;
-
 import static bench.V2.*;
-import static tests.myTests.testUtils.TestUtils.*;
 
-
-public class TestAggregate {
-    private static final Logger logger = LoggerFactory.getLogger(TestAggregate.class);
+public class TestGroup {
+    private static final Logger logger = LoggerFactory.getLogger(TestGroup.class);
 
     @Test
     public void runSmallTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select count(*) from small_table";
+        String query1 = "select x from small_table where x > 5 group by x";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Aggregate");
+        TestUtils.testQueries(logger, queries, "Group");
     }
 
     @Test
     public void runMediumTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select count(*) from medium_table";
+        String query1 = "select x from medium_table where x > 5 group by x";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Aggregate");
+        TestUtils.testQueries(logger, queries, "Group");
     }
 
     @Test
     public void runLargeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select count(*) from large_table";
+        String query1 = "select x from large_table where x > 5 group by x";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Aggregate");
+        TestUtils.testQueries(logger, queries, "Group");
     }
-
 }

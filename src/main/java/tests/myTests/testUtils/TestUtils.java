@@ -56,4 +56,22 @@ public class TestUtils {
     public static JsonPlan findPlanElement(JsonObject jsonObject, String planElement) {
         return findPlanElementRecursive(jsonObject.getAsJsonObject("Plan"), planElement);
     }
+
+    public static void testQueries(Logger logger, String[] queries, String expectedPlanType) {
+        for (String query : queries) {
+            explain(logger, query);
+            JsonObject resultsJson = explainResultsJson(query);
+            String actualPlanType = resultsJson.getAsJsonObject("Plan").
+                    get("Node Type").getAsString();
+            try {
+                Assertions.assertEquals(expectedPlanType, actualPlanType);
+                logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
+                checkTime(logger, resultsJson);
+                TestUtils.testQuery(logger, query);
+            } catch (AssertionError e) {
+                logger.error(e + " in query: " + query);
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

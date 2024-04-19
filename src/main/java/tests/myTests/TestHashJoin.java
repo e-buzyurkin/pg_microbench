@@ -16,25 +16,6 @@ public class TestHashJoin {
 
     private static final Logger logger = LoggerFactory.getLogger(TestHashJoin.class);
 
-    private void testQueries(String[] queries) {
-        for (String query : queries) {
-            explain(logger, query);
-            JsonObject resultsJson = explainResultsJson(query);
-            String actualPlanType = resultsJson.getAsJsonObject("Plan").
-                    get("Node Type").getAsString();
-            try {
-                String expectedPlanType = "Hash Join";
-                Assertions.assertEquals(expectedPlanType, actualPlanType);
-                logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
-                checkTime(logger, resultsJson);
-                TestUtils.testQuery(logger, query);
-            } catch (AssertionError e) {
-                logger.error(e + " in query: " + query);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     @Test
     public void runSmallTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
@@ -50,7 +31,7 @@ public class TestHashJoin {
                 "small_second_partner_table ssp ON sb.second_partner = ssp.id";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1, query2, query3, query4};
-        testQueries(queries);
+        TestUtils.testQueries(logger, queries, "Hash Join");
     }
 
     @Test
@@ -68,7 +49,7 @@ public class TestHashJoin {
                 "medium_second_partner_table sp ON sb.second_partner = sp.id";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1, query2, query3, query4};
-        testQueries(queries);
+        TestUtils.testQueries(logger, queries, "Hash Join");
     }
 
     @Test
@@ -86,7 +67,7 @@ public class TestHashJoin {
                 "large_second_partner_table sp ON sb.second_partner = sp.id";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1, query2, query3, query4};
-        testQueries(queries);
+        TestUtils.testQueries(logger, queries, "Hash Join");
     }
 
     //TODO add some examples with tables. (1, 1), (1, N) , (N, N)

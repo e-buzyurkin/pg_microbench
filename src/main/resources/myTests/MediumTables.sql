@@ -56,44 +56,44 @@ create table medium_business_table
 );
 
 insert into medium_table (x)
-select generate_series(1, 10000);
+select generate_series(1, 1000);
 
 insert into medium_table_1 (x)
-select floor(random() * (10000-1+1) + 1)::int
-from generate_series(1, 10000);
+select floor(random() * (1000-1+1) + 1)::int
+from generate_series(1, 1000);
 
 insert into medium_table_2 (x)
-select floor(random() * (10000-1+1) + 1)::int
-from generate_series(1, 10000);
+select floor(random() * (1000-1+1) + 1)::int
+from generate_series(1, 1000);
 
 insert into medium_parent_table (id, data)
 select generate_series,
        md5(random()::text)
-from generate_series(1, 10000);
+from generate_series(1, 1000);
 
 insert into medium_child_table (id, parent_id, data)
 select generate_series,
-       floor(random() * 10000) + 1,
+       floor(random() * 1000) + 1,
        md5(random()::text)
-from generate_series(1, 10000);
+from generate_series(1, 1000);
 
 insert into medium_users_table (id)
-select generate_series(1, 10000);
+select generate_series(1, 1000);
 
 insert into medium_profile_table (id, data)
 select generate_series,
        md5(random()::text)
-from generate_series(1, 10000);
+from generate_series(1, 1000);
 
 insert into medium_first_partner_table (id)
-select generate_series(1, 10000);
+select generate_series(1, 1000);
 
 insert into medium_second_partner_table (id)
-select generate_series(1, 10000);
+select generate_series(1, 1000);
 
 insert into medium_business_table (id, first_partner, second_partner, data)
 select generate_series,
-       floor(random() * 10000) + 1,
-       floor(random() * 10000) + 1,
+       floor(random() * 1000) + 1,
+       floor(random() * 1000) + 1,
        md5(random()::text)
-from generate_series(1, 10000);
+from generate_series(1, 1000);
