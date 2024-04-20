@@ -12,8 +12,10 @@ import static bench.V2.*;
 import static tests.myTests.testUtils.TestUtils.checkTime;
 import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
-public class TestHashAntiJoin {
-    private static final Logger logger = LoggerFactory.getLogger(TestHashAntiJoin.class);
+public class TestMixedAggregate {
+    private static final Logger logger = LoggerFactory.getLogger(TestMixedAggregate.class);
+    private static final String expectedPlanType = "Aggregate";
+    //TODO find new queries
 
     private void testQueries(String[] queries) {
         for (String query : queries) {
@@ -43,8 +45,7 @@ public class TestHashAntiJoin {
     public void runSmallTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from small_table_1 where not exists (select * from " +
-                "small_table_2 where small_table_2.x = small_table_1.x)";
+        String query1 = "select distinct x from small_table group by rollup(x)";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
         testQueries(queries);
@@ -54,8 +55,7 @@ public class TestHashAntiJoin {
     public void runMediumTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from medium_table_1 where not exists (select * from " +
-                "medium_table_2 where medium_table_2.x = medium_table_1.x)";
+        String query1 = "select distinct x from medium_table group by rollup(x)";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
         testQueries(queries);
@@ -65,8 +65,7 @@ public class TestHashAntiJoin {
     public void runLargeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from large_table_1 where not exists (select * from " +
-                "large_table_2 where large_table_2.x = large_table_1.x)";
+        String query1 = "select distinct x from large_table group by rollup(x)";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
         testQueries(queries);

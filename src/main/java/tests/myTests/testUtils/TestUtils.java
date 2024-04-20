@@ -4,14 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import net.bytebuddy.utility.nullability.MaybeNull;
 import org.junit.jupiter.api.Assertions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static bench.V2.*;
 
@@ -35,17 +33,23 @@ public class TestUtils {
         return jsonArray.get(0).getAsJsonObject();
     }
 
-    private static JsonPlan findPlanElementRecursive(JsonObject jsonObject, String planElement) {
-        JsonPlan result = new JsonPlan(jsonObject.get("Node Type").getAsString(), jsonObject);
+    private static JsonPlan findPlanElementRecursive(JsonObject jsonObject, String key, String planElement) {
+        JsonPlan result = new JsonPlan("", jsonObject);
+        if (jsonObject.has(key)) {
+            result = new JsonPlan(jsonObject.get(key).getAsString(), jsonObject);
+        }
         if (jsonObject.getAsJsonArray("Plans") != null) {
-            String planType = jsonObject.get("Node Type").getAsString();
-            if (planType.equals(planElement)) {
-                return new JsonPlan(planType, jsonObject);
+            String curPlanElement = "";
+            if (jsonObject.has(key)) {
+                curPlanElement = jsonObject.get(key).getAsString();
+            }
+            if (curPlanElement.equals(planElement)) {
+                return new JsonPlan(curPlanElement, jsonObject);
             }
             JsonArray jsonArray = jsonObject.getAsJsonArray("Plans");
             for (JsonElement jsonElement: jsonArray) {
-                result = findPlanElementRecursive(jsonElement.getAsJsonObject(), planElement);
-                if (result.getPlan().equals(planElement)) {
+                result = findPlanElementRecursive(jsonElement.getAsJsonObject(), key, planElement);
+                if (result.getPlanElement().equals(planElement)) {
                     return result;
                 }
             }
@@ -53,8 +57,8 @@ public class TestUtils {
         return result;
     }
 
-    public static JsonPlan findPlanElement(JsonObject jsonObject, String planElement) {
-        return findPlanElementRecursive(jsonObject.getAsJsonObject("Plan"), planElement);
+    public static JsonPlan findPlanElement(JsonObject jsonObject, String key, String element) {
+        return findPlanElementRecursive(jsonObject.getAsJsonObject("Plan"), key, element);
     }
 
     public static void testQueries(Logger logger, String[] queries, String expectedPlanType) {

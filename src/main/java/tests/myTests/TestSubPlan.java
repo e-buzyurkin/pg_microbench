@@ -5,31 +5,26 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tests.myTests.testUtils.JsonPlan;
 import tests.myTests.testUtils.RequiredData;
 import tests.myTests.testUtils.TestUtils;
 
 import static bench.V2.*;
 import static tests.myTests.testUtils.TestUtils.checkTime;
-import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
-public class TestHashAntiJoin {
-    private static final Logger logger = LoggerFactory.getLogger(TestHashAntiJoin.class);
+public class TestSubPlan {
+    private static final Logger logger = LoggerFactory.getLogger(TestSubPlan.class);
+    private static final String expectedPlanType = "SubPlan";
 
-    private void testQueries(String[] queries) {
+    public static void testQueries(Logger logger, String[] queries, String expectedPlanType) {
         for (String query : queries) {
             explain(logger, query);
-            JsonObject resultsJson = explainResultsJson(query);
-            String actualPlanType = resultsJson.getAsJsonObject("Plan").
-                    get("Node Type").getAsString();
-            String actualJoinType = resultsJson.getAsJsonObject("Plan").
-                    get("Join Type").getAsString();
+            JsonObject resultsJson = TestUtils.explainResultsJson(query);
+            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Parent Relationship", "SubPlan");
+            String actualPlanElement = jsonPlan.getPlanElement();
             try {
-                String expectedPlanType = "Hash Join";
-                Assertions.assertEquals(expectedPlanType, actualPlanType);
-                String expectedJoinType = "Anti";
-                Assertions.assertEquals(expectedJoinType, actualJoinType);
+                Assertions.assertEquals(expectedPlanType, actualPlanElement);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
-                logger.info("Plan check completed for " + expectedJoinType + " join type in query: " + query);
                 checkTime(logger, resultsJson);
                 TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
@@ -43,32 +38,29 @@ public class TestHashAntiJoin {
     public void runSmallTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from small_table_1 where not exists (select * from " +
-                "small_table_2 where small_table_2.x = small_table_1.x)";
+        String query1 = "select * from small_table where small_table.x not in (select small_table.x from small_table)";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        testQueries(queries);
+        testQueries(logger, queries, expectedPlanType);
     }
 
     @Test
     public void runMediumTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from medium_table_1 where not exists (select * from " +
-                "medium_table_2 where medium_table_2.x = medium_table_1.x)";
+        String query1 = "select * from medium_table where medium_table.x not in (select medium_table.x from medium_table)";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        testQueries(queries);
+        testQueries(logger, queries, expectedPlanType);
     }
 
     @Test
     public void runLargeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from large_table_1 where not exists (select * from " +
-                "large_table_2 where large_table_2.x = large_table_1.x)";
+        String query1 = "select * from large_table where large_table.x not in (select large_table.x from large_table)";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        testQueries(queries);
+        testQueries(logger, queries, expectedPlanType);
     }
 }

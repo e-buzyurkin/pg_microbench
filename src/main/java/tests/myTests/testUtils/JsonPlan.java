@@ -11,7 +11,7 @@ public class JsonPlan {
         this.json = json;
     }
 
-    public String getPlan() {
+    public String getPlanElement() {
         return plan;
     }
 

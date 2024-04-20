@@ -13,23 +13,24 @@ import static bench.V2.*;
 import static tests.myTests.testUtils.TestUtils.checkTime;
 import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
-public class TestParallelHashJoin {
+public class TestFinalizeAggregate {
 
-    //TODO Need service for testing big tables
     private static final Logger logger = LoggerFactory.getLogger(TestParallelHashJoin.class);
+    private static final String expectedPlanType = "Aggregate";
 
     private void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
-            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", "Hash Join");
-            String actualPlanType = jsonPlan.getPlanElement();
-            Boolean isParallel = jsonPlan.getJson().get("Parallel Aware").getAsBoolean();
+            String actualPlanType = resultsJson.getAsJsonObject("Plan").
+                    get("Node Type").getAsString();
+            String expectedPartialMode = "Finalize";
+            String actualPartialMode = resultsJson.getAsJsonObject("Plan").get("Partial Mode").getAsString();
             try {
-                String expectedPlanType = "Hash Join";
                 Assertions.assertEquals(expectedPlanType, actualPlanType);
-                Assertions.assertEquals(isParallel, true);
                 logger.info("Plan check completed for {} plan in query: {}", expectedPlanType, query);
+                Assertions.assertEquals(expectedPartialMode, actualPartialMode);
+                logger.info("Partial mode check completed for {} partial mode in query: {}", expectedPlanType, query);
                 checkTime(logger, resultsJson);
                 TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
