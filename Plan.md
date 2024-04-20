@@ -2,23 +2,23 @@
 
 | Запросы                 | Приоритетность | Готовность | Статус |
 |-------------------------| ------------ | - | ------ |
-| 1. Result               |              | ✖ |        |
+| 1. Result               |              | ✅ |    ✅    |
 | 2. Values Scan          |              | ✅ |    ✅    |
 | 3. Function Scan        |              | ✅  |   ✅     |
 | 4. Incremental Sort     |              | ✖ |        |
 | 5. Unique               |              | ✅ |    ✅    |
 | 6. Append               |              | ✅  |    ✅    |
-| 7. Merge Append         |              | ✖ |        |
-| 8. Subquery Scan        |              | ✖ |        |
+| 7. Merge Append         |              | ✅ |   ✅     |
+| 8. Subquery Scan        |              | ✅ |   ✅     |
 | 9. HashSetOp            |              | ✅ |   ✅     |
 | 10. SetOp               |              | ✅ |   ✅     |
-| 11. Materialize         |              | ✖ |        |
+| 11. Materialize         |              | ✅ |   ✅     |
 | 12. Memoize             |              | ✖ |        |
-| 13. Group               |              | ✖ |        |
+| 13. Group               |              | ✅ |    ✅    |
 | 14. Aggregate           |              | ✅ |   ✅     |
-| 15. GroupAggregate      |              | ✖ |        |
+| 15. GroupAggregate      |              | ✅ |   ✅     |
 | 16. HashAggregate       |              | ✅ |   ✅      |
-| 17. MixedAggregate      |              | ✖ |        |
+| 17. MixedAggregate      |              | ✅ |    ✅    |
 | 18. WindowAgg           |              | ✅  |   ✅     |
 | 19. Parallel Seq Scan   |              | ✖ |        |
 | 20. Gather              |              | ✅ |   ✅     |

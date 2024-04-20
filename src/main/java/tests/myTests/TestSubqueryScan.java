@@ -12,9 +12,9 @@ import tests.myTests.testUtils.TestUtils;
 import static bench.V2.*;
 import static tests.myTests.testUtils.TestUtils.checkTime;
 
-public class TestMaterialize {
-    private static final Logger logger = LoggerFactory.getLogger(TestMaterialize.class);
-    private static final String expectedPlanType = "Materialize";
+public class TestSubqueryScan {
+    private static final Logger logger = LoggerFactory.getLogger(TestSubqueryScan.class);
+    private static final String expectedPlanType = "Subquery Scan";
 
     public static void testQueries(String[] queries) {
         for (String query : queries) {
@@ -38,7 +38,7 @@ public class TestMaterialize {
     public void runSmallTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from small_table s1, small_table s2 where s1.x != s2.x";
+        String query1 = "select * from small_table except select * from small_table";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
         testQueries(queries);
@@ -48,9 +48,20 @@ public class TestMaterialize {
     public void runMediumTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from medium_table s1, medium_table s2 where s1.x != s2.x";
+        String query1 = "select * from medium_table except select * from medium_table";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
         testQueries(queries);
     }
+
+    @Test
+    public void runLargeTablesTests() {
+        String[] args = System.getProperty("args").split("\\s+");
+        args(args);
+        String query1 = "select * from large_table except select * from large_table";
+        requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
+        String[] queries = new String[]{query1};
+        testQueries(queries);
+    }
+
 }

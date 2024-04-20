@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tests.myTests.testUtils.JsonPlan;
 import tests.myTests.testUtils.RequiredData;
 import tests.myTests.testUtils.TestUtils;
 
@@ -15,23 +16,20 @@ import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 public class TestMixedAggregate {
     private static final Logger logger = LoggerFactory.getLogger(TestMixedAggregate.class);
     private static final String expectedPlanType = "Aggregate";
-    //TODO find new queries
 
-    private void testQueries(String[] queries) {
+    public static void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
-            JsonObject resultsJson = explainResultsJson(query);
-            String actualPlanType = resultsJson.getAsJsonObject("Plan").
-                    get("Node Type").getAsString();
-            String actualJoinType = resultsJson.getAsJsonObject("Plan").
-                    get("Join Type").getAsString();
+            JsonObject resultsJson = TestUtils.explainResultsJson(query);
+            String expectedStrategy = "Mixed";
+            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Strategy", expectedStrategy);
+            String actualStrategy = jsonPlan.getPlanElement();
+            String actualPlanType = jsonPlan.getJson().get("Node Type").getAsString();
             try {
-                String expectedPlanType = "Hash Join";
                 Assertions.assertEquals(expectedPlanType, actualPlanType);
-                String expectedJoinType = "Anti";
-                Assertions.assertEquals(expectedJoinType, actualJoinType);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
-                logger.info("Plan check completed for " + expectedJoinType + " join type in query: " + query);
+                Assertions.assertEquals(expectedStrategy, actualStrategy);
+                logger.info("Plan check completed for " + expectedStrategy + " plan strategy in query: " + query);
                 checkTime(logger, resultsJson);
                 TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {

@@ -1,18 +1,20 @@
 package tests.myTests;
 
+import com.google.gson.JsonObject;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tests.myTests.testUtils.RequiredData;
 import tests.myTests.testUtils.TestUtils;
 
 import static bench.V2.*;
+import static tests.myTests.testUtils.TestUtils.checkTime;
 
 public class TestMergeAppend {
     private static final Logger logger = LoggerFactory.getLogger(TestMergeAppend.class);
-    private static final String expectedPlanType = "Append";
+    private static final String expectedPlanType = "Merge Append";
 
-    //TODO find new queries
     @Test
     public void runFunctionTests() {
         String[] args = System.getProperty("args").split("\\s+");
@@ -23,10 +25,20 @@ public class TestMergeAppend {
     }
 
     @Test
+    public void runSmallTablesTests() {
+        String[] args = System.getProperty("args").split("\\s+");
+        args(args);
+        String query1 = "(select * from small_table order by 1) union all (select * from small_table order by 1) order by 1";
+        requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
+        String[] queries = new String[]{query1};
+        TestUtils.testQueries(logger, queries, expectedPlanType);
+    }
+
+    @Test
     public void runMediumTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select x from medium_table where x > 5 group by x";
+        String query1 = "(select * from medium_table order by 1) union all (select * from medium_table order by 1) order by 1";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueries(logger, queries, expectedPlanType);
@@ -36,7 +48,7 @@ public class TestMergeAppend {
     public void runLargeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select x from large_table where x > 5 group by x";
+        String query1 = "(select * from large_table order by 1) union all (select * from large_table order by 1) order by 1";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueries(logger, queries, expectedPlanType);
