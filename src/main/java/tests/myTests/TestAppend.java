@@ -14,6 +14,7 @@ import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
 public class TestAppend {
     private static final Logger logger = LoggerFactory.getLogger(TestAppend.class);
+    private static final String expectedPlanType = "Append";
 
     @Test
     public void runFunctionTests() {
@@ -31,7 +32,7 @@ public class TestAppend {
         String query1 = "select * from small_table_1 union all select * from small_table_2";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Append");
+        TestUtils.testQueries(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -41,7 +42,7 @@ public class TestAppend {
         String query1 = "select * from medium_table_1 union all select * from medium_table_2";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Append");
+        TestUtils.testQueries(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -51,6 +52,6 @@ public class TestAppend {
         String query1 = "select * from large_table_1 union all select * from large_table_2";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Append");
+        TestUtils.testQueries(logger, queries, expectedPlanType);
     }
 }

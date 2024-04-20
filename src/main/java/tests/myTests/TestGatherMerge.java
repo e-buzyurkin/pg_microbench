@@ -10,7 +10,9 @@ import static bench.V2.*;
 
 public class TestGatherMerge {
     private static final Logger logger = LoggerFactory.getLogger(TestGatherMerge.class);
+    private static final String expectedPlanType = "GatherMerge";
 
+    //TODO incorrect query: change it
     @Test
     public void runHugeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
@@ -18,6 +20,6 @@ public class TestGatherMerge {
         String query1 = "select * from huge_table order by 1";
         requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "GatherMerge");
+        TestUtils.testQueries(logger, queries, expectedPlanType);
     }
 }

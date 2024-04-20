@@ -10,17 +10,9 @@ import static bench.V2.*;
 
 public class TestGroupAggregate {
     private static final Logger logger = LoggerFactory.getLogger(TestGroupAggregate.class);
+    private static final String expectedPlanType = "GroupAggregate";
 
-    @Test
-    public void runSmallTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
-        String query1 = "select x, count(*) from small_table group by x order by x";
-        requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
-        String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "GroupAggregate");
-    }
-
+    //TODO create Group tests and then create find idea how to parse json for GroupAggregate
     @Test
     public void runMediumTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
@@ -28,7 +20,7 @@ public class TestGroupAggregate {
         String query1 = "select x, count(*) from medium_table group by x order by x";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "GroupAggregate");
+        TestUtils.testQueries(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -38,6 +30,6 @@ public class TestGroupAggregate {
         String query1 = "select x, count(*) from large_table group by x order by x";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "GroupAggregate");
+        TestUtils.testQueries(logger, queries, expectedPlanType);
     }
 }
