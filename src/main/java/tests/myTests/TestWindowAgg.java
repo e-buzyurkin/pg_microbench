@@ -21,7 +21,7 @@ public class TestWindowAgg {
         String query2 = "select x, sum(x) over() from generate_series(1, 1000) as f(x)";
         String query3 = "select x, sum(x) over() from generate_series(1, 100000) as f(x)";
         String[] queries = new String[]{query1, query2, query3};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -31,7 +31,7 @@ public class TestWindowAgg {
         String query1 = "select x, sum(x) over() from small_table as f(x)";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -41,7 +41,7 @@ public class TestWindowAgg {
         String query1 = "select x, sum(x) over() from medium_table as f(x)";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -51,6 +51,6 @@ public class TestWindowAgg {
         String query1 = "select x, sum(x) over() from large_table as f(x)";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

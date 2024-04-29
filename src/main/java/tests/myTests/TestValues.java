@@ -17,6 +17,6 @@ public class TestValues {
         args(args);
         String query1 = "values (1), (2), (3)";
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

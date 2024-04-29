@@ -18,7 +18,7 @@ public class TestUnique {
         args(args);
         String query1 = "select distinct * from generate_series(1, 100) order by 1";
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -28,7 +28,7 @@ public class TestUnique {
         String query1 = "select distinct * from medium_table order by 1";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -38,6 +38,6 @@ public class TestUnique {
         String query1 = "select distinct * from large_table order by 1";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

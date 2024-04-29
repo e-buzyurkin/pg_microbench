@@ -19,7 +19,7 @@ public class TestSetOp {
         String query1 = "select * from huge_table intersect select * from huge_table";
         requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     public static void main(String[] args) {

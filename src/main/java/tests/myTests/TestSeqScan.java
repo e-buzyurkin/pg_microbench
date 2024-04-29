@@ -6,18 +6,19 @@ import org.slf4j.LoggerFactory;
 import tests.myTests.testUtils.RequiredData;
 import tests.myTests.testUtils.TestUtils;
 
-import static bench.V2.*;
+import static bench.V2.args;
+import static bench.V2.requireData;
 
-public class TestGather {
-    private static final Logger logger = LoggerFactory.getLogger(TestGather.class);
-    private static final String expectedPlanType = "Gather";
+public class TestSeqScan {
+    private static final Logger logger = LoggerFactory.getLogger(TestSeqScan.class);
+    private static final String expectedPlanType = "Seq Scan";
 
     @Test
-    public void runHugeTablesTests() {
+    public void runSmallTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select sum(x) from huge_table union all select count(*) from huge_table";
-        requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
+        String query1 = "select * from small_table";
+        requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }

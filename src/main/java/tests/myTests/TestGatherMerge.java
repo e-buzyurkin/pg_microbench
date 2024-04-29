@@ -20,6 +20,6 @@ public class TestGatherMerge {
         String query1 = "select * from huge_table order by 1";
         requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

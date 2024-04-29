@@ -1,16 +1,12 @@
 package tests.myTests;
 
-import com.google.gson.JsonObject;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tests.myTests.testUtils.RequiredData;
 import tests.myTests.testUtils.TestUtils;
 
 import static bench.V2.*;
-import static tests.myTests.testUtils.TestUtils.checkTime;
-import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
 public class TestAppend {
     private static final Logger logger = LoggerFactory.getLogger(TestAppend.class);
@@ -22,7 +18,7 @@ public class TestAppend {
         args(args);
         String query1 = "select 1 union all select 2";
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, "Append");
+        TestUtils.testQueriesOnMainPlan(logger, queries, "Append");
     }
 
     @Test
@@ -32,7 +28,7 @@ public class TestAppend {
         String query1 = "select * from small_table_1 union all select * from small_table_2";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -42,7 +38,7 @@ public class TestAppend {
         String query1 = "select * from medium_table_1 union all select * from medium_table_2";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -52,6 +48,6 @@ public class TestAppend {
         String query1 = "select * from large_table_1 union all select * from large_table_2";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

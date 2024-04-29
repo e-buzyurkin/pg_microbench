@@ -20,7 +20,7 @@ public class TestNestedLoop {
         String query1 = "select * from small_table s1, small_table s2 where s1.x != s2.x";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -30,6 +30,6 @@ public class TestNestedLoop {
         String query1 = "select * from medium_table s1, medium_table s2 where s1.x != s2.x";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

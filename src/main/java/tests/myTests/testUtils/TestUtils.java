@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import net.bytebuddy.utility.nullability.MaybeNull;
 import org.junit.jupiter.api.Assertions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
@@ -61,21 +60,36 @@ public class TestUtils {
         return findPlanElementRecursive(jsonObject.getAsJsonObject("Plan"), key, element);
     }
 
-    public static void testQueries(Logger logger, String[] queries, String expectedPlanType) {
+    public static void testQueriesOnMainPlan(Logger logger, String[] queries, String expectedPlanType) {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
             String actualPlanType = resultsJson.getAsJsonObject("Plan").
                     get("Node Type").getAsString();
-            try {
-                Assertions.assertEquals(expectedPlanType, actualPlanType);
-                logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
-                checkTime(logger, resultsJson);
-                TestUtils.testQuery(logger, query);
-            } catch (AssertionError e) {
-                logger.error(e + " in query: " + query);
-                throw new RuntimeException(e);
-            }
+            assertPlans(logger, query, expectedPlanType, actualPlanType);
+            checkTime(logger, resultsJson);
+            TestUtils.testQuery(logger, query);
+        }
+    }
+    
+    public static void testQueriesOnSubPlan(Logger logger, String[] queries, String expectedPlanType) {
+        for (String query : queries) {
+            explain(logger, query);
+            JsonObject resultsJson = explainResultsJson(query);
+            String actualPlanType = findPlanElement(resultsJson, "Node Type", expectedPlanType).getPlanElement();
+            assertPlans(logger, query, expectedPlanType, actualPlanType);
+            checkTime(logger, resultsJson);
+            TestUtils.testQuery(logger, query);
+        }
+    }
+
+    private static void assertPlans(Logger logger, String query, String expectedPlanType, String actualPlanType) {
+        try {
+            Assertions.assertEquals(expectedPlanType, actualPlanType);
+            logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
+        } catch (AssertionError e) {
+            logger.error(e + " in query: " + query);
+            throw new RuntimeException(e);
         }
     }
 }

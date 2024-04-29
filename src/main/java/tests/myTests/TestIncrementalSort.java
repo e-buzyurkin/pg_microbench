@@ -21,7 +21,7 @@ public class TestIncrementalSort {
         String query1 = "select * from small_index_table order by x, y";
         requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -31,7 +31,7 @@ public class TestIncrementalSort {
         String query1 = "select * from medium_index_table order by x, y";
         requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     @Test
@@ -41,7 +41,7 @@ public class TestIncrementalSort {
         String query1 = "select * from large_index_table order by x, y";
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
     public static void main(String[] args) {

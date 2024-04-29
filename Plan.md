@@ -27,14 +27,14 @@
 | 23. Parallel Append     |              | ✖ |        |
 | 24. Parallel Hash       |              | ✖ |        |
 | 25. Parallel Hash Join  | ✅            | ✖ |        |
-| 26. CTE Scan            |              | ✖ |        |
-| 27. WorkTable Scan      |              | ✖ |        |
-| 28. WorkTable Scan      |              | ✖ |        |
-| 29. Recursive Union     |              | ✖ |        |
-| 30. ProjectSet          |              | ✖ |        |
-| 31. LockRows            |              | ✖ |        |
-| 32. Sample Scan         |              | ✖ |        |
-| 33. Table Function Scan |              | ✖ |        |
+| 26. CTE Scan            |              | ✅ |    ✅    |
+| 27. WorkTable Scan      |              | ✅  |   ✅      |
+| 28. Nested Loop         |              |  ✅ |    ✅    |
+| 29. Recursive Union     |              | ✅  |   ✅      |
+| 30. ProjectSet          |              | ✅ |    ✅    |
+| 31. LockRows            |              | ✅ |   ✅     |
+| 32. Sample Scan         |              | ✅ |    ✅    |
+| 33. Table Function Scan |              | ✅ |   ✅     |
 | 34. Foreign Scan        |              | ✖ |        |
 | 35. Tid Scan            |              | ✖ |        |
 | 36. Insert              |              | ✖ |        |
@@ -46,7 +46,6 @@
 | 42. SubPlan             |             | ✅ |    ✅    |
 | 43. Hash Join           |             | ✅ |    ✅    |
 | 44. Sort                |              |  ✅ |    ✅    |
-| 45. Nested Loop         |              |  ✅ |    ✅    |
 
 ## Действия:
 

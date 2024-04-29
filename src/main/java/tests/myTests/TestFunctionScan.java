@@ -20,6 +20,6 @@ public class TestFunctionScan {
         String query2 = "select * from generate_series(1, 1000)";
         String query3 = "select * from generate_series(1, 100000)";
         String[] queries = new String[]{query1, query2, query3};
-        TestUtils.testQueries(logger, queries, expectedPlanType);
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

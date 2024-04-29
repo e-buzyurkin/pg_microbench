@@ -13,10 +13,11 @@ import static bench.V2.*;
 import static tests.myTests.testUtils.TestUtils.checkTime;
 import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
-public class TestParallelHashJoin {
+public class TestParallelSeqScan {
+    private static final Logger logger = LoggerFactory.getLogger(TestParallelSeqScan.class);
+    private static final String expectedPlanType = "TestParallelSeqScan";
 
-    //TODO Need service for testing big tables
-    private static final Logger logger = LoggerFactory.getLogger(TestParallelHashJoin.class);
+    //TODO Fix all
 
     private void testQueries(String[] queries) {
         for (String query : queries) {
@@ -28,7 +29,7 @@ public class TestParallelHashJoin {
             try {
                 String expectedPlanType = "Hash Join";
                 Assertions.assertEquals(expectedPlanType, actualPlanType);
-                Assertions.assertEquals(true, isParallel);
+                Assertions.assertEquals(isParallel, true);
                 logger.info("Plan check completed for {} plan in query: {}", expectedPlanType, query);
                 checkTime(logger, resultsJson);
                 TestUtils.testQuery(logger, query);
@@ -43,18 +44,9 @@ public class TestParallelHashJoin {
     public void runHugeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        //1:N
-        String query1 = "select count(*) from huge_parent_table inner join huge_child_table on" +
-                " huge_parent_table.id = huge_child_table.parent_id";
-        //1:1
-        String query2 = "select count(*) from huge_profile_table inner join huge_users_table on" +
-                " huge_profile_table.id = huge_users_table.id";
-        //N:N
-        String query3 = "select count(*) from huge_business_table sb inner join " +
-                "huge_first_partner_table fb on sb.first_partner = fb.id inner join " +
-                "huge_second_partner_table sp ON sb.second_partner = sp.id";
+        String query1 = "select sum(x) from huge_table";
         requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
-        String[] queries = new String[]{query1, query2, query3};
-        testQueries(queries);
+        String[] queries = new String[]{query1};
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 }

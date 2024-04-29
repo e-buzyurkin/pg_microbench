@@ -13,23 +13,22 @@ import static bench.V2.*;
 import static tests.myTests.testUtils.TestUtils.checkTime;
 import static tests.myTests.testUtils.TestUtils.explainResultsJson;
 
-public class TestParallelHashJoin {
+public class TestParallelAppend {
+    private static final Logger logger = LoggerFactory.getLogger(TestParallelSeqScan.class);
+    private static final String expectedPlanType = "Append";
 
-    //TODO Need service for testing big tables
-    private static final Logger logger = LoggerFactory.getLogger(TestParallelHashJoin.class);
-
+    //TODO needs test
     private void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
-            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", "Hash Join");
+            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
             String actualPlanType = jsonPlan.getPlanElement();
             Boolean isParallel = jsonPlan.getJson().get("Parallel Aware").getAsBoolean();
             try {
-                String expectedPlanType = "Hash Join";
                 Assertions.assertEquals(expectedPlanType, actualPlanType);
                 Assertions.assertEquals(true, isParallel);
-                logger.info("Plan check completed for {} plan in query: {}", expectedPlanType, query);
+                logger.info("Plan check completed for {} plan in query: Parallel {}", expectedPlanType, query);
                 checkTime(logger, resultsJson);
                 TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
@@ -43,18 +42,10 @@ public class TestParallelHashJoin {
     public void runHugeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        //1:N
-        String query1 = "select count(*) from huge_parent_table inner join huge_child_table on" +
-                " huge_parent_table.id = huge_child_table.parent_id";
-        //1:1
-        String query2 = "select count(*) from huge_profile_table inner join huge_users_table on" +
-                " huge_profile_table.id = huge_users_table.id";
-        //N:N
-        String query3 = "select count(*) from huge_business_table sb inner join " +
-                "huge_first_partner_table fb on sb.first_partner = fb.id inner join " +
-                "huge_second_partner_table sp ON sb.second_partner = sp.id";
+        String query1 = "select * from huge_table union select * from huge_table union " +
+                "select * from huge_table order by 1";
         requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
-        String[] queries = new String[]{query1, query2, query3};
+        String[] queries = new String[]{query1};
         testQueries(queries);
     }
 }
