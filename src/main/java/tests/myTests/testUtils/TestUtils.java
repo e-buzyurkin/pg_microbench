@@ -83,6 +83,28 @@ public class TestUtils {
         }
     }
 
+    public static void testQueriesOnPlanElement(Logger logger, String[] queries, String expectedPlanType,
+                                                String planElementName, String expectedPlanElement) {
+        for (String query : queries) {
+            explain(logger, query);
+            JsonObject resultsJson = explainResultsJson(query);
+            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
+            String actualPlanType = jsonPlan.getPlanElement();
+            try {
+                String actualPlanElement = jsonPlan.getJson().get(planElementName).getAsString();
+                Assertions.assertEquals(expectedPlanType, actualPlanType);
+                Assertions.assertEquals(expectedPlanElement, actualPlanElement);
+                logger.info("Plan check completed for {} plan and {}: {} in query: {}", expectedPlanType, planElementName,
+                        expectedPlanElement, query);
+                checkTime(logger, resultsJson);
+                TestUtils.testQuery(logger, query);
+            } catch (AssertionError e) {
+                logger.error("{} in query: {}", e, query);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private static void assertPlans(Logger logger, String query, String expectedPlanType, String actualPlanType) {
         try {
             Assertions.assertEquals(expectedPlanType, actualPlanType);

@@ -1,0 +1,10 @@
+drop table if exists huge_table;
+drop table if exists huge_table_1;
+drop table if exists huge_table_2;
+drop table if exists huge_child_table;
+drop table if exists huge_parent_table;
+drop table if exists huge_profile_table;
+drop table if exists huge_users_table;
+drop table if exists huge_business_table;
+drop table if exists huge_first_partner_table;
+drop table if exists huge_second_partner_table;
