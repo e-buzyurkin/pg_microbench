@@ -38,3 +38,4 @@ drop table if exists large_parent_table;
 drop table if exists large_business_table;
 drop table if exists large_first_partner_table;
 drop table if exists large_second_partner_table;
+drop table if exists other_world;

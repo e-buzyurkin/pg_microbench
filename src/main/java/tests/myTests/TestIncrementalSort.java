@@ -11,53 +11,30 @@ import static bench.V2.*;
 public class TestIncrementalSort {
     private static final Logger logger = LoggerFactory.getLogger(TestIncrementalSort.class);
 
-    private static final String expectedPlanType = "IncrementalSort";
-
-    //TODO create new <size>_index_table with x and y as columns.
-    @Test
-    public void runSmallTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
-        String query1 = "select * from small_index_table order by x, y";
-        requireData(RequiredData.checkTables("small"), "myTests/SmallTables.sql");
-        String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
-    }
-
-    @Test
-    public void runMediumTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
-        String query1 = "select * from medium_index_table order by x, y";
-        requireData(RequiredData.checkTables("medium"), "myTests/MediumTables.sql");
-        String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
-    }
+    private static final String expectedPlanType = "Incremental Sort";
 
     @Test
     public void runLargeTablesTests() {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query1 = "select * from large_index_table order by x, y";
+        String query1 = "select * from large_child_table order by id, parent_id";
+        sql("create index if not exists i_large on large_table(x)");
         requireData(RequiredData.checkTables("large"), "myTests/LargeTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
+        sql("drop index if exists i_large");
     }
 
-    public static void main(String[] args) {
-
+    @Test
+    public void runHugeTablesTests() {
+        String[] args = System.getProperty("args").split("\\s+");
         args(args);
-        String query = "select count(*) from medium";
-
-        sql("create table large(x) as select generate_series(1, 1000000)");
-        sql("analyze large");
-        sql("create index i_large on large(x)");
-        sql("alter table large add column y integer");
-
-        parallel((state) -> {
-            sql("select * from large order by x, y");
-        });
-        sql("drop table large");
+        String query1 = "select * from huge_child_table order by id, parent_id";
+        sql("create index if not exists i_huge on huge_table(x)");
+        requireData(RequiredData.checkTables("huge"), "myTests/HugeTables.sql");
+        String[] queries = new String[]{query1};
+        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
+        sql("drop index if exists i_huge");
     }
 
 }

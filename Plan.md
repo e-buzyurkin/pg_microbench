@@ -5,7 +5,7 @@
 | 1. Result               |              | ✅ |    ✅    |
 | 2. Values Scan          |              | ✅ |    ✅    |
 | 3. Function Scan        |              | ✅  |   ✅     |
-| 4. Incremental Sort     |              | ✖ |        |
+| 4. Incremental Sort     |              | ✅  |    ✅     |
 | 5. Unique               |              | ✅ |    ✅    |
 | 6. Append               |              | ✅  |    ✅    |
 | 7. Merge Append         |              | ✅ |   ✅     |
@@ -35,13 +35,13 @@
 | 31. LockRows            |              | ✅ |   ✅     |
 | 32. Sample Scan         |              | ✅ |    ✅    |
 | 33. Table Function Scan |              | ✅ |   ✅     |
-| 34. Foreign Scan        |              | ✖ |        |
+| 34. Foreign Sc8*91an    |              | ✖ |        |
 | 35. Tid Scan            |              | ✅ |    ✅    |
 | 36. Insert              |              | ✅ |    ✅    |
 | 37. Update              |              | ✅ |   ✅     |
-| 38. Delete              |              | ✖ |        |
-| 39. Merge               |              | ✖ |        |
-| 40. Semi Join           | ✅            | ✖ |        |
+| 38. Delete              |              | ✅ |    ✅    |
+| 39. Merge               |              | ✅ |   ✅     |
+| 40. Semi Join           |             | ✅ |  ✅      |
 | 41. Anti Join           |             | ✅ |   ✅     |
 | 42. SubPlan             |             | ✅ |    ✅    |
 | 43. Hash Join           |             | ✅ |    ✅    |
