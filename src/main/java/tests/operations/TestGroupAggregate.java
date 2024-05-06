@@ -23,13 +23,13 @@ public class TestGroupAggregate {
             Boolean hasGroupKey = resultsJson.getAsJsonObject("Plan").has("Group Key");
             try {
                 Assertions.assertEquals(expectedPlanType, actualPlanType);
-                logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
+                logger.info("Plan check completed for " + expectedPlanType + " plan in query: {}", query);
                 Assertions.assertEquals(true, hasGroupKey);
-                logger.info("Plan check completed for GroupAggregate plan in query: " + query);
+                logger.info("Plan check completed for GroupAggregate plan in query: {}", query);
                 checkTime(logger, resultsJson);
                 TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
-                logger.error(e + " in query: " + query);
+                logger.error("{} in query: {}", e, query);
                 throw new RuntimeException(e);
             }
         }
@@ -42,6 +42,7 @@ public class TestGroupAggregate {
         args(args);
         String query1 = "select x, count(*) from medium_table group by x order by x";
         requireData(RequiredData.checkTables("medium"), "tests/operations/MediumTables.sql");
+        sql("analyze medium_table");
         String[] queries = new String[]{query1};
         testQueries(queries);
     }
@@ -52,6 +53,7 @@ public class TestGroupAggregate {
         args(args);
         String query1 = "select x, count(*) from large_table group by x order by x";
         requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");
+        sql("analyze large_table");
         String[] queries = new String[]{query1};
         testQueries(queries);
     }
