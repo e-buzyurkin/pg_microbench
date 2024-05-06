@@ -1,0 +1,11 @@
+drop table if exists small_table;
+drop table if exists small_table_with_dups;
+drop table if exists small_table_1;
+drop table if exists small_table_2;
+drop table if exists small_child_table;
+drop table if exists small_parent_table;
+drop table if exists small_profile_table;
+drop table if exists small_users_table;
+drop table if exists small_business_table;
+drop table if exists small_first_partner_table;
+drop table if exists small_second_partner_table;
