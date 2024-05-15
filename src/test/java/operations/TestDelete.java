@@ -1,7 +1,6 @@
 package operations;
 
 import bench.V2;
-import operations.utils.DropTables;
 import operations.utils.RequiredData;
 import operations.utils.TestUtils;
 import org.junit.Test;
@@ -24,7 +23,7 @@ public class TestDelete {
         String query1 = "delete from small_table where false";
         V2.requireData(RequiredData.checkTables("small"), "tests/operations/SmallTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
+        TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
     @Test
@@ -34,7 +33,7 @@ public class TestDelete {
         String query1 = "delete from medium_table where false";
         requireData(RequiredData.checkTables("medium"), "tests/operations/MediumTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
+        TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
     @Test
@@ -44,7 +43,7 @@ public class TestDelete {
         String query1 = "delete from large_table where false";
         requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
+        TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
     @Test

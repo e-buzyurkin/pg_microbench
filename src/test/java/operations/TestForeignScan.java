@@ -17,8 +17,7 @@ public class TestForeignScan {
         String[] args = System.getProperty("args").split("\\s+");
         args(args);
         String query1 = "select * from other_world";
-        V2.requireData("select 1 from other_world", TestUtils.createForeignTable(
-                db.dbName, "world"));
+        V2.requireData("select 1 from other_world", "tests/operations/ForeignTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }

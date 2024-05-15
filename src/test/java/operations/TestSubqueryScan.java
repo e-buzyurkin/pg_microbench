@@ -26,7 +26,7 @@ public class TestSubqueryScan {
                 Assertions.assertEquals(expectedPlanType, actualPlanElement);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
-                TestUtils.testQuery(logger, query);
+                TestUtils.testQuery(query);
             } catch (AssertionError e) {
                 logger.error(e + " in query: " + query);
                 throw new RuntimeException(e);

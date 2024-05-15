@@ -5,7 +5,7 @@ public class DropTables {
 
     public static void main(String[] args) {
         args(args);
-        requireData("error;", "tests/operations/DropForeignTables.sql");
+        requireData("error;", "tests/operations/DropTables.sql");
     }
 
     public static void dropTables() {

@@ -31,6 +31,6 @@ public class TestFinalizeAggregate {
                 "huge_second_partner_table sp ON sb.second_partner = sp.id";
         requireData(RequiredData.checkTables("huge"), "tests/operations/HugeTables.sql");
         String[] queries = new String[]{query1, query2, query3};
-        TestUtils.testQueriesOnPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
+        TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 }

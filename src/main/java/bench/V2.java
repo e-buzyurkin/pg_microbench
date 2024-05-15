@@ -76,6 +76,8 @@ public class V2 {
 	public static void sql(String sql, Object... binds) {
 		db.<Boolean>execute((conn) -> {
 			try(PreparedStatement pstmt = conn.prepareStatement(sql);) {
+				pstmt.setFetchSize(1000);
+
 				for(int i = 0; i < binds.length; i++) {
 					pstmt.setObject(i + 1, binds[i]);
 				}

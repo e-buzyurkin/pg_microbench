@@ -1,4 +1,5 @@
 package operations.utils;
+import bench.v2.Results;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,16 +9,34 @@ import org.junit.jupiter.api.Assertions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 
+import java.io.*;
 import java.util.List;
 
 import static bench.V2.*;
 
 public class TestUtils {
 
-    public static void testQuery(Logger logger, String query, Object... binds) {
-        parallel((state) -> {
-            sql(query);
+    private static final String fileName = "results.txt";
+    public static PrintWriter writer;
+
+    public static void testQuery(String query, Object... binds) {
+
+        Results parallelState = parallel((state) -> {
+            sql(query, binds);
         });
+
+        if (parallelState != null) {
+            try {
+                writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            writer.print(query + "; ");
+            writer.print(parallelState.iterations + " ");
+            writer.print(parallelState.tps + " ");
+            writer.println(parallelState.tpsLast5sec);
+            writer.close();
+        }
     }
 
     public static void checkTime(Logger logger, JsonObject explainResults) {
@@ -68,7 +87,7 @@ public class TestUtils {
                     get("Node Type").getAsString();
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(logger, query);
+            TestUtils.testQuery(query);
         }
     }
     
@@ -79,12 +98,32 @@ public class TestUtils {
             String actualPlanType = findPlanElement(resultsJson, "Node Type", expectedPlanType).getPlanElement();
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(logger, query);
+            TestUtils.testQuery(query);
         }
     }
 
-    public static void testQueriesOnPlanElement(Logger logger, String[] queries, String expectedPlanType,
-                                                String planElementName, String expectedPlanElement) {
+    public static void testQueriesOnPlanElement(Logger logger, String[] queries,
+                                                 String planElementName, String expectedPlanElement) {
+        for (String query : queries) {
+            explain(logger, query);
+            JsonObject resultsJson = explainResultsJson(query);
+            String actualPlanElement = TestUtils.findPlanElement(resultsJson, planElementName, expectedPlanElement).
+                    getJson().get(planElementName).getAsString();
+            try {
+                Assertions.assertEquals(expectedPlanElement, actualPlanElement);
+                logger.info("{} check completed for {} {} in query: {}", planElementName,
+                        expectedPlanElement, planElementName, query);
+                checkTime(logger, resultsJson);
+                TestUtils.testQuery(query);
+            } catch (AssertionError e) {
+                logger.error("{} in query: {}", e, query);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static void testQueriesOnPlanAndPlanElement(Logger logger, String[] queries, String expectedPlanType,
+                                                       String planElementName, String expectedPlanElement) {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
@@ -98,7 +137,7 @@ public class TestUtils {
                 logger.info("{} check completed for {} {} in query: {}", planElementName,
                         expectedPlanElement, planElementName, query);
                 checkTime(logger, resultsJson);
-                TestUtils.testQuery(logger, query);
+                TestUtils.testQuery(query);
             } catch (AssertionError e) {
                 logger.error("{} in query: {}", e, query);
                 throw new RuntimeException(e);
@@ -114,21 +153,5 @@ public class TestUtils {
             logger.error(e + " in query: " + query);
             throw new RuntimeException(e);
         }
-    }
-
-    public static String createForeignTable(String databaseName, String tableName) {
-        sql("create table " + tableName + " ( "+
-                "    greeting TEXT" +
-                " )");
-        sql("create extension if not exists postgres_fdw");
-        sql("create server postgres_fdw_test " +
-                "foreign data wrapper postgres_fdw " +
-                "options (host 'localhost', dbname '" + databaseName + "')");
-        sql("create user mapping for public server postgres_fdw_test " +
-                "options (password '')");
-        sql("create foreign table other_" + tableName + " (greeting TEXT) " +
-                "server postgres_fdw_test " +
-                "options (table_name '" + tableName + "')");
-        return "other_" + tableName;
     }
 }

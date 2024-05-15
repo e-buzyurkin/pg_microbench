@@ -27,7 +27,7 @@ public class TestGroupAggregate {
                 Assertions.assertEquals(true, hasGroupKey);
                 logger.info("Plan check completed for GroupAggregate plan in query: {}", query);
                 TestUtils.checkTime(logger, resultsJson);
-                TestUtils.testQuery(logger, query);
+                TestUtils.testQuery(query);
             } catch (AssertionError e) {
                 logger.error("{} in query: {}", e, query);
                 throw new RuntimeException(e);

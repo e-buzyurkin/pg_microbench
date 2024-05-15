@@ -30,7 +30,7 @@ public class TestMixedAggregate {
                 Assertions.assertEquals(expectedStrategy, actualStrategy);
                 logger.info("Plan check completed for " + expectedStrategy + " plan strategy in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
-                TestUtils.testQuery(logger, query);
+                TestUtils.testQuery(query);
             } catch (AssertionError e) {
                 logger.error(e + " in query: " + query);
                 throw new RuntimeException(e);

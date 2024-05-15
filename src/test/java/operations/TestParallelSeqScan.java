@@ -22,6 +22,6 @@ public class TestParallelSeqScan {
         String query1 = "select sum(x) from huge_table";
         requireData(RequiredData.checkTables("huge"), "tests/operations/HugeTables.sql");
         String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
+        TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 }

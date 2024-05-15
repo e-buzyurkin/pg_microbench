@@ -1,6 +1,8 @@
 package operations;
+import operations.utils.TestUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.testng.annotations.BeforeClass;
 
 
 @RunWith(Suite.class)
@@ -11,6 +13,7 @@ import org.junit.runners.Suite;
         TestDelete.class,
         TestFinalizeAggregate.class,
         TestForeignScan.class,
+        TestFunctionScan.class,
         TestGather.class,
         TestGatherMerge.class,
         TestGroup.class,
@@ -50,6 +53,7 @@ import org.junit.runners.Suite;
         TestWindowAgg.class,
         TestWorkTableScan.class
 })
+
 public class TestSuite {
 
 }
