@@ -23,8 +23,13 @@ public class TestMemoize {
         requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");
         sql("create index if not exists i_large on large_table(x)");
         String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnSubPlan(logger, queries, expectedPlanType);
-        sql("drop index if exists i_large");
+        try {
+            TestUtils.testQueriesOnSubPlan(logger, queries, expectedPlanType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            sql("drop index if exists i_large");
+        }
     }
 
 }

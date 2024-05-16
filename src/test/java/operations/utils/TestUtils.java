@@ -31,7 +31,7 @@ public class TestUtils {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            writer.print(query + "; ");
+            //writer.print(query + "; ");
             writer.print(parallelState.iterations + " ");
             writer.print(parallelState.tps + " ");
             writer.println(parallelState.tpsLast5sec);
@@ -130,7 +130,10 @@ public class TestUtils {
             JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
             String actualPlanType = jsonPlan.getPlanElement();
             try {
-                String actualPlanElement = jsonPlan.getJson().get(planElementName).getAsString();
+                String actualPlanElement = "";
+                if (jsonPlan.getJson().has(planElementName)) {
+                    actualPlanElement = jsonPlan.getJson().get(planElementName).getAsString();
+                }
                 Assertions.assertEquals(expectedPlanType, actualPlanType);
                 logger.info("Plan check completed for {} plan and in query: {}", expectedPlanType, query);
                 Assertions.assertEquals(expectedPlanElement, actualPlanElement);

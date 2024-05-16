@@ -6,7 +6,7 @@ create extension postgres_fdw;
 
 create server postgres_fdw_test
 foreign data wrapper postgres_fdw
-options (host 'localhost', dbname 'postgres');
+options (host '10.7.1.25', dbname 'postgres');
 
 create user mapping for public server postgres_fdw_test
 options (password '');
