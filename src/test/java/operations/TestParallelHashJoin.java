@@ -1,15 +1,18 @@
 package operations;
 
 import bench.V2;
+import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
+import operations.utils.TestCLI;
 import operations.utils.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static bench.V2.*;
 
-public class TestParallelHashJoin {
+public class TestParallelHashJoin extends TestPlan {
 
     private static final Logger logger = LoggerFactory.getLogger(TestParallelHashJoin.class);
     private static final String expectedPlanType = "Hash Join";
@@ -18,8 +21,7 @@ public class TestParallelHashJoin {
 
     @Test
     public void runHugeTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
+        
         //1:N
         String query1 = "select count(*) from huge_parent_table inner join huge_child_table on" +
                 " huge_parent_table.id = huge_child_table.parent_id";
@@ -36,4 +38,6 @@ public class TestParallelHashJoin {
         String[] queries = new String[]{query1, query2, query3};
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
+
+    
 }

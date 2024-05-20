@@ -1,14 +1,14 @@
-create table public.world (
+create table if not exists world (
     greeting TEXT
 );
 
-create extension postgres_fdw;
+create extension if not exists postgres_fdw;
 
-create server postgres_fdw_test
+create server if not exists postgres_fdw_test
 foreign data wrapper postgres_fdw
-options (host '10.7.1.25', dbname 'postgres');
+options (host 'localhost', port '5433', dbname 'postgres');
 
-create user mapping for public server postgres_fdw_test
+create user mapping if not exists for public server postgres_fdw_test
 options (password '');
 
 create foreign table other_world (greeting TEXT)

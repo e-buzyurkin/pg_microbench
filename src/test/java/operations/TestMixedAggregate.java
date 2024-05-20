@@ -2,9 +2,12 @@ package operations;
 
 import bench.V2;
 import com.google.gson.JsonObject;
+import operations.testplan.TestPlan;
 import operations.utils.JsonPlan;
 import operations.utils.RequiredData;
+import operations.utils.TestCLI;
 import operations.utils.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
@@ -12,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import static bench.V2.*;
 
-public class TestMixedAggregate {
+public class TestMixedAggregate extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestMixedAggregate.class);
     private static final String expectedPlanType = "Aggregate";
 
@@ -40,8 +43,7 @@ public class TestMixedAggregate {
 
     @Test
     public void runSmallTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
+        
         String query1 = "select distinct x from small_table group by rollup(x)";
         V2.requireData(RequiredData.checkTables("small"), "tests/operations/SmallTables.sql");
         String[] queries = new String[]{query1};
@@ -50,8 +52,7 @@ public class TestMixedAggregate {
 
     @Test
     public void runMediumTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
+        
         String query1 = "select distinct x from medium_table group by rollup(x)";
         requireData(RequiredData.checkTables("medium"), "tests/operations/MediumTables.sql");
         String[] queries = new String[]{query1};
@@ -67,4 +68,6 @@ public class TestMixedAggregate {
 //        String[] queries = new String[]{query1};
 //        testQueries(queries);
 //    }
+
+    
 }

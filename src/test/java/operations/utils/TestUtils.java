@@ -1,4 +1,5 @@
 package operations.utils;
+
 import bench.v2.Results;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -19,18 +20,21 @@ public class TestUtils {
     private static final String fileName = "results.txt";
     public static PrintWriter writer;
 
+    static {
+        try {
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void testQuery(String query, Object... binds) {
 
-        Results parallelState = parallel((state) -> {
-            sql(query, binds);
-        });
+        Results parallelState = parallel((state) -> sql(query, binds));
+
 
         if (parallelState != null) {
-            try {
-                writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+
             //writer.print(query + "; ");
             writer.print(parallelState.iterations + " ");
             writer.print(parallelState.tps + " ");
@@ -65,7 +69,7 @@ public class TestUtils {
                 return new JsonPlan(curPlanElement, jsonObject);
             }
             JsonArray jsonArray = jsonObject.getAsJsonArray("Plans");
-            for (JsonElement jsonElement: jsonArray) {
+            for (JsonElement jsonElement : jsonArray) {
                 result = findPlanElementRecursive(jsonElement.getAsJsonObject(), key, planElement);
                 if (result.getPlanElement().equals(planElement)) {
                     return result;
@@ -90,7 +94,7 @@ public class TestUtils {
             TestUtils.testQuery(query);
         }
     }
-    
+
     public static void testQueriesOnSubPlan(Logger logger, String[] queries, String expectedPlanType) {
         for (String query : queries) {
             explain(logger, query);
@@ -103,22 +107,15 @@ public class TestUtils {
     }
 
     public static void testQueriesOnPlanElement(Logger logger, String[] queries,
-                                                 String planElementName, String expectedPlanElement) {
+                                                String planElementName, String expectedPlanElement) {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
             String actualPlanElement = TestUtils.findPlanElement(resultsJson, planElementName, expectedPlanElement).
                     getJson().get(planElementName).getAsString();
-            try {
-                Assertions.assertEquals(expectedPlanElement, actualPlanElement);
-                logger.info("{} check completed for {} {} in query: {}", planElementName,
-                        expectedPlanElement, planElementName, query);
-                checkTime(logger, resultsJson);
-                TestUtils.testQuery(query);
-            } catch (AssertionError e) {
-                logger.error("{} in query: {}", e, query);
-                throw new RuntimeException(e);
-            }
+            assertPlanElements(logger, query, planElementName, expectedPlanElement, actualPlanElement);
+            checkTime(logger, resultsJson);
+            TestUtils.testQuery(query);
         }
     }
 
@@ -129,32 +126,55 @@ public class TestUtils {
             JsonObject resultsJson = explainResultsJson(query);
             JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
             String actualPlanType = jsonPlan.getPlanElement();
-            try {
-                String actualPlanElement = "";
-                if (jsonPlan.getJson().has(planElementName)) {
-                    actualPlanElement = jsonPlan.getJson().get(planElementName).getAsString();
-                }
-                Assertions.assertEquals(expectedPlanType, actualPlanType);
-                logger.info("Plan check completed for {} plan and in query: {}", expectedPlanType, query);
-                Assertions.assertEquals(expectedPlanElement, actualPlanElement);
-                logger.info("{} check completed for {} {} in query: {}", planElementName,
-                        expectedPlanElement, planElementName, query);
-                checkTime(logger, resultsJson);
-                TestUtils.testQuery(query);
-            } catch (AssertionError e) {
-                logger.error("{} in query: {}", e, query);
-                throw new RuntimeException(e);
+            String actualPlanElement = "";
+            if (jsonPlan.getJson().has(planElementName)) {
+                actualPlanElement = jsonPlan.getJson().get(planElementName).getAsString();
             }
+            assertPlans(logger, query, expectedPlanType, actualPlanType);
+            assertPlanElements(logger, query, planElementName, expectedPlanElement, actualPlanElement);
+            TestUtils.testQuery(query);
+        }
+    }
+
+    private static void assertPlanElements(Logger logger, String query, String planElementName,
+                                           String expectedPlanElement, String actualPlanElement) {
+        try {
+            Assertions.assertEquals(expectedPlanElement, actualPlanElement);
+            logger.info("{} check completed for {} {} in query: {}", planElementName,
+                    expectedPlanElement, planElementName, query);
+        } catch (AssertionError e) {
+            logger.error("{} in query: {}", e, query);
+            writer.println();
+            throw new RuntimeException(e);
         }
     }
 
     private static void assertPlans(Logger logger, String query, String expectedPlanType, String actualPlanType) {
         try {
             Assertions.assertEquals(expectedPlanType, actualPlanType);
-            logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
+            logger.info("Plan element check completed for {} plan in query: {}", expectedPlanType, query);
         } catch (AssertionError e) {
-            logger.error(e + " in query: " + query);
+            logger.error("{} in query: {}", e, query);
+            writer.println();
             throw new RuntimeException(e);
         }
     }
+
+    public static String createForeignTable(String tableName) {
+        String foreignTableName = "other_" + tableName;
+        sql("create table if not exists world (\n" +
+                "    greeting TEXT\n" +
+                ")");
+        sql("create extension if not exists postgres_fdw");
+        sql("create server if not exists postgres_fdw_test\n" +
+                "foreign data wrapper postgres_fdw\n" +
+                "options (host '" + db.host + "', port '" + db.port + "', dbname '" + db.dbName + "')");
+        sql("create user mapping if not exists for public server postgres_fdw_test\n" +
+                "options (password '')");
+        sql("create foreign table if not exists " + foreignTableName + " (greeting TEXT)\n" +
+                "server postgres_fdw_test\n" +
+                "options (table_name '" + tableName + "')");
+        return foreignTableName;
+    }
+
 }

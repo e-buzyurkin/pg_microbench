@@ -45,6 +45,7 @@ public class Database {
 	public String passwd;
 	public int poolSize;
 	public long maxLifetime;
+	public int fetchSize = 1000;
 	
 	public Database(String host, int port, String dbName, String userName, String passwd, int poolSize, Long maxLifetime) {
 		this.host = host;
@@ -160,7 +161,7 @@ public class Database {
 		} catch (SQLException e) {
 			
 			log.info("{}", e.getMessage());
-			if( e.getMessage().contains("could not serialize access due to concurrent update") == true)
+			if(e.getMessage().contains("could not serialize access due to concurrent update"))
 				return null;
 			if (handlerOnError != null)
 				try{
@@ -218,6 +219,8 @@ public class Database {
 		return execute((conn) -> {
 			List<V> res = new ArrayList<V>();
 			try(PreparedStatement pstmt = conn.prepareStatement(sql);) {
+				pstmt.setFetchSize(fetchSize);
+
 				for(int i = 0; i < binds.length; i++) {
 					pstmt.setObject(i + 1, binds[i]);
 				}
@@ -237,6 +240,7 @@ public class Database {
 	public boolean selectSingle(VoidResultSet rsHandler, String sql, Object... binds) {
 		return execute((conn) -> {
 			try(PreparedStatement pstmt = conn.prepareStatement(sql);) {
+				pstmt.setFetchSize(fetchSize);
 				for(int i = 0; i < binds.length; i++) {
 					pstmt.setObject(i + 1, binds[i]);
 				}
@@ -266,6 +270,7 @@ public class Database {
 		return execute((conn) -> {
 			Map<K, V> map = new HashMap<>();
 			try(PreparedStatement pstmt = conn.prepareStatement(sql);) {
+				pstmt.setFetchSize(fetchSize);
 				for(int i = 0; i < binds.length; i++) {
 					pstmt.setObject(i + 1, binds[i]);
 				}
@@ -278,5 +283,34 @@ public class Database {
 			}
 			return map;
 		});
+	}
+
+	public void close() throws SQLException {
+		// Close connections from ThreadLocal
+		Connection localConn = conn.get();
+		if (localConn != null) {
+			try {
+				if (!localConn.isClosed()) {
+					localConn.close();
+					log.info("ThreadLocal connection closed.");
+				}
+			} catch (SQLException e) {
+				log.error("Error closing ThreadLocal connection: {}", e.getMessage());
+			} finally {
+				conn.remove();
+			}
+		}
+
+		// Close DataSources
+		if (ds != null) {
+			for (DataSource d : ds) {
+				if (d instanceof HikariDataSource) {
+                    ((HikariDataSource) d).close();
+                    log.info("HikariDataSource closed.");
+                }
+			}
+			ds = null;
+			log.info("All database connections closed.");
+		}
 	}
 }

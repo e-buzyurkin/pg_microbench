@@ -58,6 +58,8 @@ public class V2 {
 	private static final String DEFVOLUME="10";
 	private static final String DEFRUNTYPE=Phase.EXECUTE.toString();
 	private static final String DEFSTRATEGY="none";
+	private static final int fetchSize = 1000;
+	private static ScheduledExecutorService pool;
 	
 	public enum RangeOption{
 		RANDOM,
@@ -76,12 +78,12 @@ public class V2 {
 	public static void sql(String sql, Object... binds) {
 		db.<Boolean>execute((conn) -> {
 			try(PreparedStatement pstmt = conn.prepareStatement(sql);) {
-				pstmt.setFetchSize(1000);
 
 				for(int i = 0; i < binds.length; i++) {
 					pstmt.setObject(i + 1, binds[i]);
 				}
-				
+
+				pstmt.setFetchSize(fetchSize);
 				return pstmt.execute();
 			}
 		});
@@ -308,7 +310,7 @@ public class V2 {
 	}
 	
 	private static long parallelInternal(final WorkerUnit x, long iterationLimit, int timeout, List<Snap> snaps, int period, boolean monVerbose) {
-		ScheduledExecutorService pool = Executors.newScheduledThreadPool(params.workers);
+		pool = Executors.newScheduledThreadPool(params.workers);
 		ScheduledExecutorService mon = Executors.newScheduledThreadPool(1);
 
 		CyclicBarrier c = new CyclicBarrier(params.workers + 1);
@@ -569,6 +571,7 @@ public class V2 {
 		
 		CallableStatement<Boolean> checkStmt = (conn) -> {
 			try(PreparedStatement pstmt = conn.prepareStatement(checkSQL);) {
+				pstmt.setFetchSize(fetchSize);
 				return pstmt.execute();
 			}
 		};
@@ -598,5 +601,23 @@ public class V2 {
 	
 	public static void logResults(Results res) {
 		log.info("Test results: last 5 sec {} tps, overall {} tps, {} iterations", res.tpsLast5sec, res.tps, res.iterations);
+	}
+
+	public static void closeConnection() {
+		if (db != null) {
+			try {
+				if (pool != null) {
+					pool.shutdown();
+					pool.awaitTermination(10, TimeUnit.SECONDS);
+				}
+
+				db.close();
+				log.info("Database connection closed successfully.");
+			} catch (SQLException e) {
+				log.error("Failed to close database connection.", e);
+			} catch (InterruptedException e) {
+				log.error("Thread was interrupted while waiting for thread pool termination.", e);
+			}
+		}
 	}
 }

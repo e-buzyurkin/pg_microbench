@@ -1,23 +1,24 @@
 package operations;
 
 import bench.V2;
+import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
+import operations.utils.TestCLI;
 import operations.utils.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static bench.V2.*;
 
-public class TestHashJoin {
+public class TestHashJoin extends TestPlan {
 
     private static final Logger logger = LoggerFactory.getLogger(TestHashJoin.class);
     private static final String expectedPlanType = "Hash Join";
 
     @Test
     public void runSmallTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
 
         String query1 = "select * from small_table_1 where exists (select * from " +
                 "small_table_2 where small_table_1.x = small_table_2.x)";
@@ -38,8 +39,7 @@ public class TestHashJoin {
 
     @Test
     public void runMediumTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
+        
         String query1 = "select * from medium_table_1 where exists (select * from " +
                 "medium_table_2 where medium_table_1.x = medium_table_2.x)";
         //1:N relation
@@ -59,9 +59,6 @@ public class TestHashJoin {
 
     @Test
     public void runLargeTablesTests() {
-        String[] args = System.getProperty("args").split("\\s+");
-        args(args);
-
 
         String query1 = "select * from large_table_1 where exists (select * from " +
                 "large_table_2 where large_table_1.x = large_table_2.x)";
@@ -79,5 +76,7 @@ public class TestHashJoin {
         String[] queries = new String[]{query1, query2, query4};
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
+
+    
 
 }
