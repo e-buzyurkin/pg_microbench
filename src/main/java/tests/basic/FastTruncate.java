@@ -1,4 +1,4 @@
-package tests;
+package tests.basic;
 
 import bench.V2;
 

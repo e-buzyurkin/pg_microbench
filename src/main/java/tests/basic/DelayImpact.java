@@ -1,8 +1,6 @@
-package tests;
+package tests.basic;
 
 import static bench.V2.*;
-
-import bench.v2.Var;
 
 public class DelayImpact {
 

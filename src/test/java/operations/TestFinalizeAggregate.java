@@ -1,9 +1,7 @@
 package operations;
 
 import operations.testplan.TestPlan;
-import operations.utils.TestCLI;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import operations.utils.RequiredData;
@@ -18,7 +16,7 @@ public class TestFinalizeAggregate extends TestPlan {
     private static final String planElementName = "Partial Mode";
     private static final String expectedPlanElement = "Finalize";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runHugeTablesTests() {
         //1:N
         String query1 = "select count(*) from huge_parent_table inner join huge_child_table on" +

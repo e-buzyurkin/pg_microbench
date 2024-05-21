@@ -5,11 +5,10 @@ import com.google.gson.JsonObject;
 import operations.testplan.TestPlan;
 import operations.utils.JsonPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class TestSubqueryScan extends TestPlan {
             JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
             String actualPlanElement = jsonPlan.getPlanElement();
             try {
-                Assertions.assertEquals(expectedPlanType, actualPlanElement);
+                Assert.assertEquals(expectedPlanType, actualPlanElement);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
                 TestUtils.testQuery(query);
@@ -37,7 +36,7 @@ public class TestSubqueryScan extends TestPlan {
         }
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table except select * from small_table";
@@ -46,7 +45,7 @@ public class TestSubqueryScan extends TestPlan {
         testQueries(queries);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table except select * from medium_table";
@@ -55,7 +54,7 @@ public class TestSubqueryScan extends TestPlan {
         testQueries(queries);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_table except select * from large_table";

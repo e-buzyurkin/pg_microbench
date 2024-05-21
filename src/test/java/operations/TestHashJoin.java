@@ -3,10 +3,9 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ public class TestHashJoin extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestHashJoin.class);
     private static final String expectedPlanType = "Hash Join";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
 
         String query1 = "select * from small_table_1 where exists (select * from " +
@@ -37,7 +36,7 @@ public class TestHashJoin extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table_1 where exists (select * from " +
@@ -57,7 +56,7 @@ public class TestHashJoin extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
 
         String query1 = "select * from large_table_1 where exists (select * from " +

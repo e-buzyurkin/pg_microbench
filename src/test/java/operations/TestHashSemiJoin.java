@@ -3,14 +3,12 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static bench.V2.args;
 import static bench.V2.requireData;
 
 public class TestHashSemiJoin extends TestPlan {
@@ -20,18 +18,18 @@ public class TestHashSemiJoin extends TestPlan {
     private static final String expectedPlanElement = "Semi";
 
 
-    @Test
-    public void runSmallMediumTablesTests() {
+    @Test(alwaysRun = true)
+    public void runSmallLargeTablesTests() {
 
         String query1 = "select * from small_table where exists (select * from " +
-                "medium_table where small_table.x = medium_table.x)";
+                "large_table where small_table.x = large_table.x)";
         V2.requireData(RequiredData.checkTables("small"), "tests/operations/SmallTables.sql");
-        requireData(RequiredData.checkTables("medium"), "tests/operations/MediumTables.sql");
+        requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumLargeTablesTests() {
         
         String query1 = "select * from medium_table where exists (select * from " +
@@ -42,7 +40,7 @@ public class TestHashSemiJoin extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
 
         String query1 = "select * from large_table where exists (select * from " +

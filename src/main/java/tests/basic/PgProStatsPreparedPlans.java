@@ -1,4 +1,4 @@
-package tests;
+package tests.basic;
 
 import static bench.V2.args;
 

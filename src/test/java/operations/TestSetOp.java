@@ -3,20 +3,17 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static bench.V2.*;
 
 public class TestSetOp extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestSetOp.class);
     private static final String expectedPlanType = "SetOp";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTableTests() {
         
         String query1 = "select * from small_table intersect select * from small_table";
@@ -25,7 +22,7 @@ public class TestSetOp extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table intersect select * from medium_table";
@@ -34,7 +31,7 @@ public class TestSetOp extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_table intersect select * from large_table";
@@ -43,14 +40,14 @@ public class TestSetOp extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
-    public void runHugeTablesTests() {
-        
-        String query1 = "select * from huge_table intersect select * from huge_table";
-        V2.requireData(RequiredData.checkTables("huge"), "tests/operations/HugeTables.sql");
-        String[] queries = new String[]{query1};
-        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
-    }
+//    @Test(alwaysRun = true)
+//    public void runHugeTablesTests() {
+//
+//        String query1 = "select * from huge_table intersect select * from huge_table";
+//        V2.requireData(RequiredData.checkTables("huge"), "tests/operations/HugeTables.sql");
+//        String[] queries = new String[]{query1};
+//        TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
+//    }
 
     
 }

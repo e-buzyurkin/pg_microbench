@@ -3,10 +3,9 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,7 @@ public class TestHashAggregate extends TestPlan {
     private static final String planElementName = "Strategy";
     private static final String expectedPlanElement = "Hashed";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
         
         String query1 = "select distinct x from small_table";
@@ -28,7 +27,7 @@ public class TestHashAggregate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select distinct x from medium_table";
@@ -37,7 +36,7 @@ public class TestHashAggregate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
         
         String query1 = "select distinct x from large_table";

@@ -1,4 +1,4 @@
-package tests;
+package tests.basic;
 import static bench.V2.*;
 public class InsertOnly {
     public static void main(String[] args) {

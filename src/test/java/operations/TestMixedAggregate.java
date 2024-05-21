@@ -5,11 +5,10 @@ import com.google.gson.JsonObject;
 import operations.testplan.TestPlan;
 import operations.utils.JsonPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +27,9 @@ public class TestMixedAggregate extends TestPlan {
             String actualStrategy = jsonPlan.getPlanElement();
             String actualPlanType = jsonPlan.getJson().get("Node Type").getAsString();
             try {
-                Assertions.assertEquals(expectedPlanType, actualPlanType);
+                Assert.assertEquals(expectedPlanType, actualPlanType);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
-                Assertions.assertEquals(expectedStrategy, actualStrategy);
+                Assert.assertEquals(expectedStrategy, actualStrategy);
                 logger.info("Plan check completed for " + expectedStrategy + " plan strategy in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
                 TestUtils.testQuery(query);
@@ -41,7 +40,7 @@ public class TestMixedAggregate extends TestPlan {
         }
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
         
         String query1 = "select distinct x from small_table group by rollup(x)";
@@ -50,7 +49,7 @@ public class TestMixedAggregate extends TestPlan {
         testQueries(queries);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select distinct x from medium_table group by rollup(x)";
@@ -59,7 +58,7 @@ public class TestMixedAggregate extends TestPlan {
         testQueries(queries);
     }
 
-//    @Test
+//    @Test(alwaysRun = true)
 //    public void runLargeTablesTests() {
 //        String[] args = System.getProperty("args").split("\\s+");
 //        args(args);

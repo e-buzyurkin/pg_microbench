@@ -6,9 +6,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.junit.jupiter.api.Assertions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
+import org.testng.Assert;
 
 import java.io.*;
 import java.util.List;
@@ -20,7 +20,8 @@ public class TestUtils {
     private static final String fileName = "results.txt";
     public static PrintWriter writer;
 
-    static {
+
+    public static void openWriter() {
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
         } catch (IOException e) {
@@ -31,10 +32,8 @@ public class TestUtils {
     public static void testQuery(String query, Object... binds) {
 
         Results parallelState = parallel((state) -> sql(query, binds));
-
-
         if (parallelState != null) {
-
+            openWriter();
             //writer.print(query + "; ");
             writer.print(parallelState.iterations + " ");
             writer.print(parallelState.tps + " ");
@@ -139,23 +138,27 @@ public class TestUtils {
     private static void assertPlanElements(Logger logger, String query, String planElementName,
                                            String expectedPlanElement, String actualPlanElement) {
         try {
-            Assertions.assertEquals(expectedPlanElement, actualPlanElement);
+            Assert.assertEquals(expectedPlanElement, actualPlanElement);
             logger.info("{} check completed for {} {} in query: {}", planElementName,
                     expectedPlanElement, planElementName, query);
         } catch (AssertionError e) {
             logger.error("{} in query: {}", e, query);
+            openWriter();
             writer.println();
+            writer.close();
             throw new RuntimeException(e);
         }
     }
 
     private static void assertPlans(Logger logger, String query, String expectedPlanType, String actualPlanType) {
         try {
-            Assertions.assertEquals(expectedPlanType, actualPlanType);
+            Assert.assertEquals(expectedPlanType, actualPlanType);
             logger.info("Plan element check completed for {} plan in query: {}", expectedPlanType, query);
         } catch (AssertionError e) {
             logger.error("{} in query: {}", e, query);
+            openWriter();
             writer.println();
+            writer.close();
             throw new RuntimeException(e);
         }
     }

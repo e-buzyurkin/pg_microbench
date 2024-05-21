@@ -2,9 +2,8 @@ package operations;
 
 
 import operations.testplan.TestPlan;
-import operations.utils.TestCLI;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import operations.utils.RequiredData;
@@ -18,7 +17,7 @@ public class TestParallelSeqScan extends TestPlan {
     private static final String planElementName = "Parallel Aware";
     private static final String expectedPlanElement = "true";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runHugeTablesTests() {
         
         String query1 = "select sum(x) from huge_table";

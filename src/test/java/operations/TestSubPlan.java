@@ -1,15 +1,11 @@
 package operations;
 
 import bench.V2;
-import com.google.gson.JsonObject;
 import operations.testplan.TestPlan;
-import operations.utils.JsonPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +16,7 @@ public class TestSubPlan extends TestPlan {
     private static final String planElementName = "Parent Relationship";
     private static final String expectedPlanElement = "SubPlan";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table where small_table.x not in (select small_table.x from small_table)";
@@ -29,7 +25,7 @@ public class TestSubPlan extends TestPlan {
         TestUtils.testQueriesOnPlanElement(logger, queries, planElementName, expectedPlanElement);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table where medium_table.x not in (select medium_table.x from medium_table)";

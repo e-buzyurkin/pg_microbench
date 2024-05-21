@@ -3,10 +3,9 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ public class TestMemoize extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestMemoize.class);
     private static final String expectedPlanType = "Memoize";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumLargeTablesTests() {
         
         String query1 = "select * from medium_table_with_dups join large_table using (x)";

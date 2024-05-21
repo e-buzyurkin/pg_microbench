@@ -1,14 +1,18 @@
-package tests;
+package tests.basic;
 
 import static bench.V2.*;
 
+import java.util.Arrays;
 import java.util.Random;
 
-public class SdmUpdate {
+public class SdmSelect {
 
 	public static void main(String[] args) {
 		args(args);
 
+		verbosity = true;
+		autoCommit = false;
+		
 		requireData("select 1 from accounts limit 1", () -> {
 			psql("SdmSimpleTable.sql", 0);
 
@@ -18,15 +22,20 @@ public class SdmUpdate {
 						+ "SELECT 'Name' || gs.*::text," + r.nextInt(1000) + "," + r.nextInt(1000) + ","
 						+ r.nextInt(1000) + "," + r.nextInt(1000) + "," + r.nextInt(1000)
 						+ " FROM generate_series(1,10000) AS gs");
+				commit();
 			});
 			return null;
-
 		});
 
+		Random r = new Random();
+		sessionAffinity = false;
+		
 		parallel((state) -> {
-			Random r = new Random();
-			sql("update accounts set net = " + r.nextInt(1000) + " WHERE aid = "
-					+ r.nextInt(10000 * params.volume));
+			Integer key = r.nextInt(10000 * params.volume);
+			ctx("accounts", Arrays.asList(key), state, (st) -> {
+				sql("SELECT name, value, etransfer, itransfer, net, nit FROM accounts WHERE aid = ?", key);
+				commit();
+			});
 		});
 	}
 }

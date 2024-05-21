@@ -3,10 +3,9 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ public class TestMergeAppend extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestMergeAppend.class);
     private static final String expectedPlanType = "Merge Append";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runFunctionTests() {
         
         String query1 = "(values (1), (2) order by 1) union all (values(3), (4) order by 1) order by 1";
@@ -24,7 +23,7 @@ public class TestMergeAppend extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
         
         String query1 = "(select * from small_table order by 1) union all (select * from small_table order by 1) order by 1";
@@ -33,7 +32,7 @@ public class TestMergeAppend extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "(select * from medium_table order by 1) union all (select * from medium_table order by 1) order by 1";
@@ -42,7 +41,7 @@ public class TestMergeAppend extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
         
         String query1 = "(select * from large_table order by 1) union all (select * from large_table order by 1) order by 1";

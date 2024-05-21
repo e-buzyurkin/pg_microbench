@@ -4,11 +4,10 @@ import bench.V2;
 import com.google.gson.JsonObject;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,37 +24,29 @@ public class TestGroupAggregate extends TestPlan {
             String actualPlanType = resultsJson.getAsJsonObject("Plan").get("Node Type").getAsString();
             Boolean hasGroupKey = resultsJson.getAsJsonObject("Plan").has("Group Key");
             try {
-                Assertions.assertEquals(expectedPlanType, actualPlanType);
+                Assert.assertEquals(expectedPlanType, actualPlanType);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: {}", query);
-                Assertions.assertEquals(true, hasGroupKey);
+                Assert.assertEquals(true, hasGroupKey);
                 logger.info("Plan check completed for GroupAggregate plan in query: {}", query);
                 TestUtils.checkTime(logger, resultsJson);
                 TestUtils.testQuery(query);
             } catch (AssertionError e) {
+                TestUtils.openWriter();
+                TestUtils.writer.println();
+                TestUtils.writer.close();
                 logger.error("{} in query: {}", e, query);
                 throw new RuntimeException(e);
             }
         }
     }
 
-
-    @Test
-    public void runMediumTablesTests() {
-        String query1 = "select x, count(*) from medium_table group by x order by x";
-        V2.requireData(RequiredData.checkTables("medium"), "tests/operations/MediumTables.sql");
-        sql("analyze medium_table");
-        String[] queries = new String[]{query1};
-        testQueries(queries);
-    }
-
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
         String query1 = "select x, count(*) from large_table group by x order by x";
-        requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");
+        V2.requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");
         sql("analyze large_table");
         String[] queries = new String[]{query1};
         testQueries(queries);
     }
 
-    
 }

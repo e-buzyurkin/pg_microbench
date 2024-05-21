@@ -3,10 +3,9 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ public class TestWindowAgg extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestWindowAgg.class);
     private static final String expectedPlanType = "WindowAgg";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runFunctionTests() {
         
         String query1 = "select x, sum(x) over() from generate_series(1, 10) as f(x)";
@@ -27,7 +26,7 @@ public class TestWindowAgg extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runSmallTablesTests() {
         
         String query1 = "select x, sum(x) over() from small_table as f(x)";
@@ -36,7 +35,7 @@ public class TestWindowAgg extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runMediumTablesTests() {
         
         String query1 = "select x, sum(x) over() from medium_table as f(x)";
@@ -45,7 +44,7 @@ public class TestWindowAgg extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test
+    @Test(alwaysRun = true)
     public void runLargeTablesTests() {
         
         String query1 = "select x, sum(x) over() from large_table as f(x)";

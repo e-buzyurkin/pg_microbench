@@ -1,21 +1,18 @@
 package operations;
 
 import operations.testplan.TestPlan;
-import operations.utils.TestCLI;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import operations.utils.TestUtils;
-
-import static bench.V2.*;
 
 
 public class TestWorkTableScan extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestWorkTableScan.class);
     private static final String expectedPlanType = "WorkTable Scan";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runFunctionsTests() {
         
         String query1 = "with recursive source (counter) as (" +

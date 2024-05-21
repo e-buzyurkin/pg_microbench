@@ -3,14 +3,11 @@ package operations;
 import bench.V2;
 import operations.testplan.TestPlan;
 import operations.utils.RequiredData;
-import operations.utils.TestCLI;
 import operations.utils.TestUtils;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static bench.V2.*;
 
 public class TestParallelHashJoin extends TestPlan {
 
@@ -19,7 +16,7 @@ public class TestParallelHashJoin extends TestPlan {
     private static final String planElementName = "Parallel Aware";
     private static final String expectedPlanElement = "true";
 
-    @Test
+    @Test(alwaysRun = true)
     public void runHugeTablesTests() {
         
         //1:N
