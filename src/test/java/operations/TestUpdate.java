@@ -17,7 +17,7 @@ public class TestUpdate extends TestPlan {
     private static final String planElementName = "Operation";
     private static final String expectedPlanElement = "Update";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "update small_table set x = 1 where x = 1";
@@ -26,7 +26,7 @@ public class TestUpdate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "update medium_table set x = 1 where x = 1";
@@ -35,7 +35,7 @@ public class TestUpdate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "update large_table set x = 1 where x = 1";
@@ -44,7 +44,7 @@ public class TestUpdate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 5)
     public void runHugeTablesTests() {
         
         String query1 = "update huge_table set x = 1 where x = 1";

@@ -17,7 +17,7 @@ public class TestInsert extends TestPlan {
     private static final String planElementName = "Operation";
     private static final String expectedPlanElement = "Insert";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "INSERT INTO small_table SELECT * FROM generate_series(1,0) WHERE false";
@@ -26,7 +26,7 @@ public class TestInsert extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "INSERT INTO medium_table SELECT * FROM generate_series(1,0) WHERE false";
@@ -35,7 +35,7 @@ public class TestInsert extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "INSERT INTO large_table SELECT * FROM generate_series(1,0) WHERE false";
@@ -44,7 +44,7 @@ public class TestInsert extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 5)
     public void runHugeTablesTests() {
         
         String query1 = "INSERT INTO huge_table SELECT * FROM generate_series(1,0) WHERE false";

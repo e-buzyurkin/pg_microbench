@@ -15,7 +15,7 @@ public class TestSeqScan extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestSeqScan.class);
     private static final String expectedPlanType = "Seq Scan";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table";

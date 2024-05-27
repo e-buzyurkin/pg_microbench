@@ -22,7 +22,7 @@ public class TestSetOp extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table intersect select * from medium_table";
@@ -31,7 +31,7 @@ public class TestSetOp extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_table intersect select * from large_table";

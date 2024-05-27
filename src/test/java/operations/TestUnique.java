@@ -15,7 +15,7 @@ public class TestUnique extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestUnique.class);
     private static final String expectedPlanType = "Unique";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 1)
     public void runFunctionTests() {
         
         String query1 = "select distinct * from generate_series(1, 100) order by 1";
@@ -23,7 +23,7 @@ public class TestUnique extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select distinct * from medium_table order by 1";
@@ -32,7 +32,7 @@ public class TestUnique extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select distinct * from large_table order by 1";

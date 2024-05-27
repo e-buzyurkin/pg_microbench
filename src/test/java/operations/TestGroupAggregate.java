@@ -40,7 +40,7 @@ public class TestGroupAggregate extends TestPlan {
         }
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         String query1 = "select x, count(*) from large_table group by x order by x";
         V2.requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");

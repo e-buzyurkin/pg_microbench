@@ -40,7 +40,7 @@ public class TestHashSemiJoin extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
 
         String query1 = "select * from large_table where exists (select * from " +

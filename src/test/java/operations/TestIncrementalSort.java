@@ -14,7 +14,7 @@ public class TestIncrementalSort extends TestPlan {
 
     private static final String expectedPlanType = "Incremental Sort";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_child_table order by id, parent_id";

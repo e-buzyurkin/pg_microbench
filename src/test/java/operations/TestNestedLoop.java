@@ -14,7 +14,7 @@ public class TestNestedLoop extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestNestedLoop.class);
     private static final String expectedPlanType = "Nested Loop";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table s1, small_table s2 where s1.x != s2.x";

@@ -16,7 +16,7 @@ public class TestHashJoin extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestHashJoin.class);
     private static final String expectedPlanType = "Hash Join";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
 
         String query1 = "select * from small_table_1 where exists (select * from " +
@@ -36,7 +36,7 @@ public class TestHashJoin extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table_1 where exists (select * from " +
@@ -56,7 +56,7 @@ public class TestHashJoin extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
 
         String query1 = "select * from large_table_1 where exists (select * from " +

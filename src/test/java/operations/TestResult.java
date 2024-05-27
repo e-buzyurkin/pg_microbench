@@ -11,7 +11,7 @@ public class TestResult extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestResult.class);
     private static final String expectedPlanType = "Result";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 1)
     public void runFunctionTests() {
         
         String query1 = "select 1";

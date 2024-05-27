@@ -40,7 +40,7 @@ public class TestMixedAggregate extends TestPlan {
         }
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select distinct x from small_table group by rollup(x)";
@@ -49,7 +49,7 @@ public class TestMixedAggregate extends TestPlan {
         testQueries(queries);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select distinct x from medium_table group by rollup(x)";

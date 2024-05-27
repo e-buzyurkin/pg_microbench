@@ -16,7 +16,7 @@ public class TestWindowAgg extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestWindowAgg.class);
     private static final String expectedPlanType = "WindowAgg";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 1)
     public void runFunctionTests() {
         
         String query1 = "select x, sum(x) over() from generate_series(1, 10) as f(x)";
@@ -26,7 +26,7 @@ public class TestWindowAgg extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select x, sum(x) over() from small_table as f(x)";
@@ -35,7 +35,7 @@ public class TestWindowAgg extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select x, sum(x) over() from medium_table as f(x)";
@@ -44,7 +44,7 @@ public class TestWindowAgg extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select x, sum(x) over() from large_table as f(x)";

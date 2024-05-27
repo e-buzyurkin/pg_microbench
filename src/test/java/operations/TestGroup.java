@@ -16,7 +16,7 @@ public class TestGroup extends TestPlan {
     private static final String expectedPlanType = "Group";
 
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select x from medium_table where x < 0 group by x";
@@ -26,7 +26,7 @@ public class TestGroup extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select x from large_table where x < 0 group by x";

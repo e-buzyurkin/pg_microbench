@@ -13,7 +13,7 @@ public class TestAggregate extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestAggregate.class);
     private static final String expectedPlanType = "Aggregate";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         String query1 = "select count(*) from small_table";
         requireData(RequiredData.checkTables("small"), "tests/operations/SmallTables.sql");
@@ -21,7 +21,7 @@ public class TestAggregate extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         String query1 = "select count(*) from medium_table";
         requireData(RequiredData.checkTables("medium"), "tests/operations/MediumTables.sql");
@@ -29,7 +29,7 @@ public class TestAggregate extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         String query1 = "select count(*) from large_table";
         requireData(RequiredData.checkTables("large"), "tests/operations/LargeTables.sql");

@@ -14,7 +14,7 @@ public class TestSort extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestSort.class);
     private static final String expectedPlanType = "Sort";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select x, count(*) from small_table group by x order by x";

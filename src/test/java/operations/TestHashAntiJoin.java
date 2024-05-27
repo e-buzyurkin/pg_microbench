@@ -16,7 +16,7 @@ public class TestHashAntiJoin extends TestPlan {
     private static final String planElementName = "Join Type";
     private static final String expectedPlanElement = "Anti";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table_1 where not exists (select * from " +
@@ -26,7 +26,7 @@ public class TestHashAntiJoin extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table_1 where not exists (select * from " +
@@ -36,7 +36,7 @@ public class TestHashAntiJoin extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_table_1 where not exists (select * from " +

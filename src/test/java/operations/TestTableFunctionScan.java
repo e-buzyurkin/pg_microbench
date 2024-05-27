@@ -12,7 +12,7 @@ public class TestTableFunctionScan extends TestPlan {
     private static final String expectedPlanType = "Table Function Scan";
 
     @Test(alwaysRun = true)
-    public void runFunctionsTests() {
+    public void runFunctionTests() {
         
         String query1 = "select * from XMLTABLE(" +
                 "'/ROWS/ROW' PASSING " +

@@ -36,7 +36,7 @@ public class TestSubqueryScan extends TestPlan {
         }
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table except select * from small_table";
@@ -45,7 +45,7 @@ public class TestSubqueryScan extends TestPlan {
         testQueries(queries);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table except select * from medium_table";
@@ -54,7 +54,7 @@ public class TestSubqueryScan extends TestPlan {
         testQueries(queries);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_table except select * from large_table";

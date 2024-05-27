@@ -16,7 +16,7 @@ public class TestSubPlan extends TestPlan {
     private static final String planElementName = "Parent Relationship";
     private static final String expectedPlanElement = "SubPlan";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table where small_table.x not in (select small_table.x from small_table)";
@@ -25,7 +25,7 @@ public class TestSubPlan extends TestPlan {
         TestUtils.testQueriesOnPlanElement(logger, queries, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table where medium_table.x not in (select medium_table.x from medium_table)";

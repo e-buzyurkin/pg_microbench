@@ -15,7 +15,7 @@ public class TestSampleScan extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestSampleScan.class);
     private static final String expectedPlanType = "Sample Scan";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select * from small_table tablesample system(50)";
@@ -24,7 +24,7 @@ public class TestSampleScan extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select * from medium_table tablesample system(50)";
@@ -33,7 +33,7 @@ public class TestSampleScan extends TestPlan {
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select * from large_table tablesample system(50)";

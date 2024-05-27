@@ -12,7 +12,7 @@ public class TestFunctionScan extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestFunctionScan.class);
     private static final String expectedPlanType = "Function Scan";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 1)
     public void runFunctionTests() {
         
         String query1 = "select * from generate_series(1, 10)";

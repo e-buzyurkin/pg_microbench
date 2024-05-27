@@ -16,7 +16,7 @@ public class TestParallelAppend extends TestPlan {
     private static final String planElementName = "Parallel Aware";
     private static final String expectedPlanElement = "true";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 5)
     public void runHugeTablesTests() {
         
         String query1 = "select * from huge_table union all select * from huge_table " +

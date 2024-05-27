@@ -12,7 +12,7 @@ public class TestProjectSet extends TestPlan {
     private static final String expectedPlanType = "ProjectSet";
 
     @Test(alwaysRun = true)
-    public void runFunctionsTests() {
+    public void runFunctionTests() {
         
         String query1 = "select generate_series(1, 10)";
         String query2 = "select generate_series(1, 1000)";

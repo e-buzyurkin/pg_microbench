@@ -13,7 +13,7 @@ public class TestWorkTableScan extends TestPlan {
     private static final String expectedPlanType = "WorkTable Scan";
 
     @Test(alwaysRun = true)
-    public void runFunctionsTests() {
+    public void runFunctionTests() {
         
         String query1 = "with recursive source (counter) as (" +
                 "select 1 union all select counter + 1 from source where counter < 10) " +

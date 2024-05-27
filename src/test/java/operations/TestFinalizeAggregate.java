@@ -16,7 +16,7 @@ public class TestFinalizeAggregate extends TestPlan {
     private static final String planElementName = "Partial Mode";
     private static final String expectedPlanElement = "Finalize";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 5)
     public void runHugeTablesTests() {
         //1:N
         String query1 = "select count(*) from huge_parent_table inner join huge_child_table on" +

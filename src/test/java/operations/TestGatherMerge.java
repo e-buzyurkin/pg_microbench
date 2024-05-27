@@ -13,7 +13,7 @@ public class TestGatherMerge extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestGatherMerge.class);
     private static final String expectedPlanType = "Gather Merge";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 5)
     public void runHugeTablesTests() {
         
         String query1 = "select * from huge_parent_table order by 2";

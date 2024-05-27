@@ -17,7 +17,7 @@ public class TestMerge extends TestPlan {
     private static final String planElementName = "Operation";
     private static final String expectedPlanElement = "Merge";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "MERGE INTO small_parent_table USING (VALUES (1)) m(id)" +
@@ -29,7 +29,7 @@ public class TestMerge extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "MERGE INTO medium_parent_table USING (VALUES (1)) m(id) " +
@@ -41,7 +41,7 @@ public class TestMerge extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "MERGE INTO large_parent_table USING (VALUES (1)) m(id) " +
@@ -53,7 +53,7 @@ public class TestMerge extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 5)
     public void runHugeTablesTests() {
         
         String query1 = "MERGE INTO huge_parent_table USING (VALUES (1)) m(id) " +

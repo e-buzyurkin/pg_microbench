@@ -18,7 +18,7 @@ public class TestHashAggregate extends TestPlan {
     private static final String planElementName = "Strategy";
     private static final String expectedPlanElement = "Hashed";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         
         String query1 = "select distinct x from small_table";
@@ -27,7 +27,7 @@ public class TestHashAggregate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 3)
     public void runMediumTablesTests() {
         
         String query1 = "select distinct x from medium_table";
@@ -36,7 +36,7 @@ public class TestHashAggregate extends TestPlan {
         TestUtils.testQueriesOnPlanAndPlanElement(logger, queries, expectedPlanType, planElementName, expectedPlanElement);
     }
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 4)
     public void runLargeTablesTests() {
         
         String query1 = "select distinct x from large_table";

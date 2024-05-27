@@ -11,7 +11,7 @@ public class TestValues extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestValues.class);
     private static final String expectedPlanType = "Values Scan";
 
-    @Test(alwaysRun = true)
+    @Test(alwaysRun = true, priority = 1)
     public void runFunctionTests() {
         
         String query1 = "values (1), (2), (3)";
