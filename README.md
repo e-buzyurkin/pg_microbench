@@ -1,11 +1,11 @@
 ## How to run
 
-# All tests:
+### All tests:
 
 ```
 mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5433'" -f pom.xml
 ```
-# Single test:
+### Single test:
 ```
 mvn test -DTest=TestResult -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5433'" -f pom.xml
 ```
