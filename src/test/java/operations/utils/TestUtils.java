@@ -34,7 +34,6 @@ public class TestUtils {
         Results parallelState = parallel((state) -> sql(query, binds));
         if (parallelState != null) {
             openWriter();
-            //writer.print(query + "; ");
             writer.print(parallelState.iterations + " ");
             writer.print(parallelState.tps + " ");
             writer.println(parallelState.tpsLast5sec);
@@ -138,6 +137,7 @@ public class TestUtils {
     private static void assertPlanElements(Logger logger, String query, String planElementName,
                                            String expectedPlanElement, String actualPlanElement) {
         try {
+            printQueryInfoInFile(logger, query);
             Assert.assertEquals(expectedPlanElement, actualPlanElement);
             logger.info("{} check completed for {} {} in query: {}", planElementName,
                     expectedPlanElement, planElementName, query);
@@ -152,6 +152,7 @@ public class TestUtils {
 
     private static void assertPlans(Logger logger, String query, String expectedPlanType, String actualPlanType) {
         try {
+            printQueryInfoInFile(logger, query);
             Assert.assertEquals(expectedPlanType, actualPlanType);
             logger.info("Plan element check completed for {} plan in query: {}", expectedPlanType, query);
         } catch (AssertionError e) {
@@ -178,6 +179,13 @@ public class TestUtils {
                 "server postgres_fdw_test\n" +
                 "options (table_name '" + tableName + "')");
         return foreignTableName;
+    }
+
+    public static void printQueryInfoInFile(Logger logger, String query) {
+        openWriter();
+        writer.print(logger.getName().replace("Test", "").replace("operations.", "") + "; ");
+        writer.print(query + "; ");
+        writer.close();
     }
 
 }

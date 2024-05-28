@@ -24,6 +24,7 @@ public class TestGroupAggregate extends TestPlan {
             String actualPlanType = resultsJson.getAsJsonObject("Plan").get("Node Type").getAsString();
             Boolean hasGroupKey = resultsJson.getAsJsonObject("Plan").has("Group Key");
             try {
+                TestUtils.printQueryInfoInFile(logger, query);
                 Assert.assertEquals(expectedPlanType, actualPlanType);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: {}", query);
                 Assert.assertEquals(true, hasGroupKey);

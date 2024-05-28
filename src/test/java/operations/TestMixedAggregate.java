@@ -17,24 +17,29 @@ import static bench.V2.*;
 public class TestMixedAggregate extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestMixedAggregate.class);
     private static final String expectedPlanType = "Aggregate";
+    private static final String planElementName = "Strategy";
+    private static final String expectedPlanElementName = "Mixed";
 
     public static void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = TestUtils.explainResultsJson(query);
-            String expectedStrategy = "Mixed";
-            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Strategy", expectedStrategy);
+            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, planElementName, expectedPlanElementName);
             String actualStrategy = jsonPlan.getPlanElement();
             String actualPlanType = jsonPlan.getJson().get("Node Type").getAsString();
             try {
+                TestUtils.printQueryInfoInFile(logger, query);
                 Assert.assertEquals(expectedPlanType, actualPlanType);
                 logger.info("Plan check completed for " + expectedPlanType + " plan in query: " + query);
-                Assert.assertEquals(expectedStrategy, actualStrategy);
-                logger.info("Plan check completed for " + expectedStrategy + " plan strategy in query: " + query);
+                Assert.assertEquals(expectedPlanElementName, actualStrategy);
+                logger.info("Plan check completed for " + expectedPlanElementName + " plan strategy in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
                 TestUtils.testQuery(query);
             } catch (AssertionError e) {
                 logger.error(e + " in query: " + query);
+                TestUtils.openWriter();
+                TestUtils.writer.println();
+                TestUtils.writer.close();
                 throw new RuntimeException(e);
             }
         }
