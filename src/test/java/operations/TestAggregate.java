@@ -16,7 +16,8 @@ public class TestAggregate extends TestPlan {
     @Test(alwaysRun = true, priority = 2)
     public void runSmallTablesTests() {
         String query1 = "select count(*) from small_table";
-        requireData(RequiredData.checkTables("small"), "tests/operations/SmallTables.sql");
+        requireData(RequiredData.checkTables("small"),
+                "tests/operations/SmallTables.sql");
         String[] queries = new String[]{query1};
         TestUtils.testQueriesOnMainPlan(logger, queries, expectedPlanType);
     }
