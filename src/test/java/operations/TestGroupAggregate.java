@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static bench.V2.*;
+import static operations.utils.JsonOperations.explainResultsJson;
 
 public class TestGroupAggregate extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestGroupAggregate.class);
@@ -20,7 +21,7 @@ public class TestGroupAggregate extends TestPlan {
     public static void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
-            JsonObject resultsJson = TestUtils.explainResultsJson(query);
+            JsonObject resultsJson = explainResultsJson(query);
             String actualPlanType = resultsJson.getAsJsonObject("Plan").get("Node Type").getAsString();
             Boolean hasGroupKey = resultsJson.getAsJsonObject("Plan").has("Group Key");
             try {

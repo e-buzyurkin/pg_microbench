@@ -32,8 +32,7 @@ public class TestUtils {
     }
 
     public static void testQuery(String query, Object... binds) {
-
-        Results parallelState = parallel((state) -> sql(query, binds));
+        Results parallelState = parallel((state) -> sql("explain analyze " + query, binds));
         if (parallelState != null) {
             openWriter();
             writer.print(parallelState.iterations + " ");

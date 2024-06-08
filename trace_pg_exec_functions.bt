@@ -1,0 +1,177 @@
+#!/usr/bin/env bpftrace
+
+// Requires:
+// - bpftrace, linux-libc-dev (debian)
+//
+// Add -p <pid> to filter on a single process (select bg_backend_pid())
+//
+// FIXME: path to postgres executable is hard coded
+// FIXME: if an error occurs in the execute phase, there is no query_execute_done probe fired, and the portal counter stays at current value
+BEGIN
+{
+    printf("PostgreSQL statement execution analyzer.\n");
+    printf("Time in microseconds (us).\n");
+    printf("pid   :Phase      :time to phase :time in phase : query\n");
+    printf("------|-----------|--------------|--------------|------\n");
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pgstat_report_activity
+{
+    @current_statement[pid] = str(arg0);
+}
+uprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
+{
+    $time = nsecs;
+    printf("[%5u]Query start:              :              : %s\n", pid, str(arg0));
+    @query_start[pid] = $time;
+    @phase_done[pid] = $time;
+    @query_trigger[pid] = 1;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
+{
+    $time = nsecs;
+    $query_end = $time - @query_start[pid];
+    printf("[%5u]Query done : (%10u) :    %10u:\n", pid, ($time - @phase_done[pid])/1000, $query_end/1000);
+    @parse[pid] = (uint64)0;
+    @rewrite[pid] = (uint64)0;
+    @plan[pid] = (uint64)0;
+    @execute[pid] = (uint64)0;
+    @query_trigger[pid] = 0;
+    @exec_result[pid] = (uint64)0;
+}
+uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
+{
+    $time = nsecs;
+    if ( @query_trigger[pid] == 1 )
+    {
+        @to_parse[pid] = $time - @phase_done[pid];
+    }
+    else
+    {
+        @to_parse[pid] = 0;
+    }
+    @parse_start[pid] = $time;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
+{
+    $time = nsecs;
+    @parse[pid] += ($time - @parse_start[pid]);
+    printf("[%5u] parse     : (%10u) :    %10u: \n", pid, @to_parse[pid]/1000, ($time - @parse_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
+{
+    $time = nsecs;
+    @to_rewrite[pid] = $time - @phase_done[pid];
+    @rewrite_start[pid] = $time;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
+{
+    $time = nsecs;
+    @rewrite[pid] += ($time - @rewrite_start[pid]);
+    printf("[%5u] rewrite   : (%10u) :    %10u: \n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
+{
+    $time = nsecs;
+    @to_rewrite[pid] = ($time - @phase_done[pid]);
+    @rewrite_start[pid] = $time;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
+{
+    $time = nsecs;
+    @rewrite[pid] += ($time - @rewrite_start[pid]);
+    printf("[%5u] rewrite   : (%10u) :    %10u: \n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
+{
+    $time = nsecs;
+    @to_rewrite[pid] = ($time - @phase_done[pid]);
+    @rewrite_start[pid] = $time;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
+{
+    $time = nsecs;
+    @rewrite[pid] += ($time - @rewrite_start[pid]);
+    printf("[%5u] rewrite   : (%10u) :    %10u: \n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+
+
+
+uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
+{
+    $time = nsecs;
+    @to_plan[pid] = ($time - @phase_done[pid]);
+    @plan_start[pid] = $time;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
+{
+    $time = nsecs;
+    @plan[pid] += ($time - @plan_start[pid]);
+    printf("[%5u] plan      : (%10u) :    %10u: %s\n", pid, @to_plan[pid]/1000, ($time - @plan_start[pid])/1000, @current_statement[pid]);
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:PortalRun
+{
+    $time = nsecs;
+    @portal_counter[pid]+=1;
+    @to_execute[pid, @portal_counter[pid]] = $time - @phase_done[pid];
+    @execute_start[pid, @portal_counter[pid]] = $time;
+}
+uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
+{
+    $time = nsecs;
+    if ( @portal_counter[pid] == 1 )
+    {
+        printf("[%5u] execute   : (%10u) :    %10u: %s\n", pid, @to_execute[pid, @portal_counter[pid]]/1000, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
+    }
+    else
+    {
+        printf("[%5u] execute   : (%10u) :    %10u: %s\n", pid, 0, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
+    }
+    @portal_counter[pid]-=1;
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:ExecInitResult
+{
+    $time = nsecs;
+    @portal_counter[pid]+=1;
+    @exec_result[pid, @portal_counter[pid]] = $time - @phase_done[pid];
+    @exec_result_start[pid, @portal_counter[pid]] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:ExecInitResult
+{
+    $time = nsecs;
+    @plan[pid] += ($time - @exec_result_start[pid]);
+    printf("[%5u] result      : (%10u) :    %10u: %s\n", pid, @exec_result[pid]/1000, ($time - @exec_result[pid])/1000, @current_statement[pid]);
+    @phase_done[pid] = $time;
+}
+
+
+END
+{
+    clear(@query_start);
+    clear(@query_trigger);
+    clear(@to_parse);
+    clear(@parse_start);
+    clear(@parse);
+    clear(@to_rewrite);
+    clear(@rewrite_start);
+    clear(@rewrite);
+    clear(@to_plan);
+    clear(@plan_start);
+    clear(@plan);
+    clear(@to_execute);
+    clear(@execute_start);
+    clear(@execute);
+    clear(@portal_counter);
+    clear(@phase_done);
+    clear(@current_statement);
+
+}

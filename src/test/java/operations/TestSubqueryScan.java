@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static bench.V2.*;
+import static operations.utils.JsonOperations.explainResultsJson;
+import static operations.utils.JsonOperations.findPlanElement;
 
 public class TestSubqueryScan extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestSubqueryScan.class);
@@ -21,8 +23,8 @@ public class TestSubqueryScan extends TestPlan {
     public static void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
-            JsonObject resultsJson = TestUtils.explainResultsJson(query);
-            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
+            JsonObject resultsJson = explainResultsJson(query);
+            JsonPlan jsonPlan = findPlanElement(resultsJson, "Node Type", expectedPlanType);
             String actualPlanElement = jsonPlan.getPlanElement();
             try {
                 Assert.assertEquals(expectedPlanType, actualPlanElement);
