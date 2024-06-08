@@ -37,7 +37,9 @@ uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
     @plan[pid] = (uint64)0;
     @execute[pid] = (uint64)0;
     @query_trigger[pid] = 0;
-    @exec_result[pid] = (uint64)0;
+
+    @result[pid] = (uint64)0;
+    @result_start[pid] = (uint64)0;
 }
 uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
@@ -99,8 +101,6 @@ uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
     @phase_done[pid] = $time;
 }
 
-
-
 uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
@@ -121,6 +121,7 @@ uprobe:/usr/local/pgsql/bin/postgres:PortalRun
     @portal_counter[pid]+=1;
     @to_execute[pid, @portal_counter[pid]] = $time - @phase_done[pid];
     @execute_start[pid, @portal_counter[pid]] = $time;
+    @op_phase_done[pid] = $time;
 }
 uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
 {
@@ -137,20 +138,19 @@ uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
     @phase_done[pid] = $time;
 }
 
-uprobe:/usr/local/pgsql/bin/postgres:ExecInitResult
+uprobe:/usr/local/pgsql/bin/postgres:ExecResult
 {
     $time = nsecs;
-    @portal_counter[pid]+=1;
-    @exec_result[pid, @portal_counter[pid]] = $time - @phase_done[pid];
-    @exec_result_start[pid, @portal_counter[pid]] = $time;
+    @to_result[pid] = $time - @op_phase_done[pid];
+    @result_start[pid] = $time;
 }
 
-uretprobe:/usr/local/pgsql/bin/postgres:ExecInitResult
+uretprobe:/usr/local/pgsql/bin/postgres:ExecResult
 {
     $time = nsecs;
-    @plan[pid] += ($time - @exec_result_start[pid]);
-    printf("[%5u] result      : (%10u) :    %10u: %s\n", pid, @exec_result[pid]/1000, ($time - @exec_result[pid])/1000, @current_statement[pid]);
-    @phase_done[pid] = $time;
+    @result[pid] += ($time - @result_start[pid]);
+    printf("[%5u] result     : (%10u) :    %10u: %s\n", pid, @to_result[pid]/1000, ($time - @result_start[pid])/1000, @current_statement[pid]);
+    @op_phase_done[pid] = $time;
 }
 
 
@@ -173,5 +173,9 @@ END
     clear(@portal_counter);
     clear(@phase_done);
     clear(@current_statement);
+
+    clear(@op_phase_done);
+    clear(@result);
+    clear(@result_start);
 
 }
