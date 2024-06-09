@@ -1,12 +1,5 @@
 #!/usr/bin/env bpftrace
 
-// Requires:
-// - bpftrace, linux-libc-dev (debian)
-//
-// Add -p <pid> to filter on a single process (select bg_backend_pid())
-//
-// FIXME: path to postgres executable is hard coded
-// FIXME: if an error occurs in the execute phase, there is no query_execute_done probe fired, and the portal counter stays at current value
 BEGIN
 {
     printf("PostgreSQL statement execution analyzer.\n");
@@ -37,10 +30,8 @@ uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
     @plan[pid] = (uint64)0;
     @execute[pid] = (uint64)0;
     @query_trigger[pid] = 0;
-
-    @result[pid] = (uint64)0;
-    @result_start[pid] = (uint64)0;
 }
+
 uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
     $time = nsecs;
@@ -138,21 +129,35 @@ uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
     @phase_done[pid] = $time;
 }
 
-uprobe:/usr/local/pgsql/bin/postgres:ExecResult
+uprobe:/usr/local/pgsql/bin/postgres:ExecResult,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecSeqScan,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecIndexScan,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecTidScan,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecSubqueryScan,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecFunctionScan,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecValuesScan,
+      uprobe:/usr/local/pgsql/bin/postgres:ExecCteScan
 {
-    $time = nsecs;
-    @to_result[pid] = $time - @op_phase_done[pid];
-    @result_start[pid] = $time;
+      @op_start[pid] = nsecs;
 }
 
-uretprobe:/usr/local/pgsql/bin/postgres:ExecResult
+uretprobe:/usr/local/pgsql/bin/postgres:ExecResult,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSeqScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecIndexScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecTidScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSubqueryScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecFunctionScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecValuesScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecCteScan
 {
-    $time = nsecs;
-    @result[pid] += ($time - @result_start[pid]);
-    printf("[%5u] result     : (%10u) :    %10u: %s\n", pid, @to_result[pid]/1000, ($time - @result_start[pid])/1000, @current_statement[pid]);
-    @op_phase_done[pid] = $time;
+    @op_counter[pid, probe] += 1;
+    if (@op_counter[pid, probe] % 2 == 1) {
+        $time = nsecs;
+        $duration = $time - @op_start[pid];
+        printf("[%5u] %s : (%10u) :    %10u: %s\n", pid, probe, @op_counter[pid, probe], $duration/1000, @current_statement[pid]);
+        @op_phase_done[pid] = $time;
+    }
 }
-
 
 END
 {
@@ -175,7 +180,7 @@ END
     clear(@current_statement);
 
     clear(@op_phase_done);
-    clear(@result);
-    clear(@result_start);
 
+    clear(@op_start);
+    clear(@op_counter);
 }
