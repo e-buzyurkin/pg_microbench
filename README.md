@@ -7,7 +7,7 @@ mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5433'" -f pom.xml
 ```
 Single test:
 ```
-mvn test -DTest=TestResult -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5433'" -f pom.xml
+mvn test -DTest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
 ```
 
 ## Args
