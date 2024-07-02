@@ -31,7 +31,7 @@ public class TestGroupAggregate extends TestPlan {
                 Assert.assertEquals(true, hasGroupKey);
                 logger.info("Plan check completed for GroupAggregate plan in query: {}", query);
                 TestUtils.checkTime(logger, resultsJson);
-                TestUtils.testQuery(query);
+                TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
                 TestUtils.openWriter();
                 TestUtils.writer.println();

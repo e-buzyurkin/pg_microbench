@@ -1,17 +1,13 @@
 package operations.utils;
 
 import bench.v2.Results;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.testng.Assert;
 
 import java.io.*;
-import java.util.List;
+
 
 import static bench.V2.*;
 import static operations.utils.JsonOperations.explainResultsJson;
@@ -31,8 +27,10 @@ public class TestUtils {
         }
     }
 
-    public static void testQuery(String query, Object... binds) {
+    public static void testQuery(Logger logger, String query, Object... binds) {
         Results parallelState = parallel((state) -> sql("explain analyze " + query, binds));
+        QueryProfiler profiler = new QueryProfiler();
+        profiler.profile(logger);
         if (parallelState != null) {
             openWriter();
             writer.print(parallelState.iterations + " ");
@@ -55,7 +53,7 @@ public class TestUtils {
                     get("Node Type").getAsString();
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 
@@ -66,7 +64,7 @@ public class TestUtils {
             String actualPlanType = findPlanElement(resultsJson, "Node Type", expectedPlanType).getPlanElement();
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 
@@ -79,7 +77,7 @@ public class TestUtils {
                     getJson().get(planElementName).getAsString();
             assertPlanElements(logger, query, planElementName, expectedPlanElement, actualPlanElement);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 
@@ -96,7 +94,7 @@ public class TestUtils {
             }
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             assertPlanElements(logger, query, planElementName, expectedPlanElement, actualPlanElement);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 

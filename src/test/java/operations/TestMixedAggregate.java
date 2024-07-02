@@ -36,7 +36,7 @@ public class TestMixedAggregate extends TestPlan {
                 Assert.assertEquals(expectedPlanElementName, actualStrategy);
                 logger.info("Plan check completed for " + expectedPlanElementName + " plan strategy in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
-                TestUtils.testQuery(query);
+                TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
                 logger.error(e + " in query: " + query);
                 TestUtils.openWriter();

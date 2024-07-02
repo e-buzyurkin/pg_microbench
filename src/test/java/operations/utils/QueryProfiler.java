@@ -1,34 +1,61 @@
 package operations.utils;
 
-import com.google.gson.JsonObject;
-import static operations.utils.JsonOperations.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.util.HashMap;
-import java.util.List;
 
 public class QueryProfiler {
-    private static HashMap<Integer, QueryProfileData> profileDataList;
-    private double time;
+    private final HashMap<String, Double> profileDataMap = new HashMap<>();
 
-    public void profile(String query, Object ...binds) {
-        JsonObject object = explainResultsJson(query, binds);
-        List<JsonPlan> list = getAllPlans(object);
-        for (int i = 0; i < list.size(); i++) {
-            double seconds = list.get(i).getJson().get("Actual Total Time").getAsDouble();
-            time += seconds;
-            if (profileDataList.containsKey(i)) {
-                profileDataList.get(i).addSeconds(seconds);
+    public void profile(Logger logger) {
+        String filePath = "bg.log";
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String line;
+            Double allTime = 0.0;
+
+            while ((line = reader.readLine()) != null) {
+                try {
+                    if (!line.startsWith("{")) {
+                        continue;
+                    }
+                    ProbeData probeData = objectMapper.readValue(line, ProbeData.class);
+
+                    if (probeData.getType().equals("query_start")) {
+                        continue;
+                    }
+
+                    if (probeData.getType().equals("parse")
+                    || probeData.getType().equals("plan") || probeData.getType().equals("rewrite")
+                    || probeData.getType().equals("execute")) {
+                        allTime += addToHashMap("other", probeData.getTimeBefore());
+                    }
+                    allTime += addToHashMap(probeData.getType(), probeData.getTimeIn());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            else {
-                profileDataList.put(i, new QueryProfileData(list.get(i).getPlanElement(), seconds));
+            logger.info("profiling started");
+            for (String key : profileDataMap.keySet()) {
+                logger.info("{}: {} ms - {}%", key, profileDataMap.get(key),
+                        (profileDataMap.get(key)) / allTime * 100);
             }
+        } catch (IOException e) {
+            logger.info("profiling failed due to {}", e.getMessage());
         }
     }
 
-    public HashMap<Integer, QueryProfileData> getProfileDataList() {
-        for (QueryProfileData profileData : profileDataList.values()) {
-            profileData.setPercent(profileData.getSeconds() / time * 100);
+    private Double addToHashMap(String type, Long time) {
+        Double micros = time / 1000.0;
+        if (profileDataMap.containsKey(type)) {
+            profileDataMap.put(type, profileDataMap.get(type) + micros);
+        } else {
+            profileDataMap.put(type, micros);
         }
-        return profileDataList;
+        return micros;
     }
 }
