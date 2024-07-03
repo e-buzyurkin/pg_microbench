@@ -1,0 +1,51 @@
+---
+- name: Run bpftrace and mvn test
+  hosts: all
+  become: yes
+  vars:
+    mvn_test_args: ""  # Аргументы для mvn test будут передаваться при запуске playbook
+    jarfile: ""
+    mainclass: ""
+    dburl: ""
+    test_class: ""  # Новый параметр для тестирующего класса
+
+  tasks:
+    - name: Ensure bpftrace script is present
+      copy:
+        src: trace_pg_exec_functions.bt
+        dest: /tmp/trace_pg_exec_functions.bt
+        mode: '0755'
+
+    - name: Run bpftrace script
+      command: sudo bpftrace /tmp/trace_pg_exec_functions.bt
+      async: 300
+      poll: 0
+      register: bpftrace_job
+
+    - name: Wait for bpftrace script to finish
+      async_status:
+        jid: "{{ bpftrace_job.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 10
+      delay: 30
+
+    - name: Run Maven tests with provided arguments
+      command: >
+        mvn test 
+        -cp {{ jarfile }}
+        "{{ mainclass }}"
+        -Dtest={{ TEST_CLASS }} 
+        -d {{ lookup('env','DB') | default('postgres', true) }} 
+        -U {{ lookup('env','USER_NAME') | default('postgres', true) }}  
+        -P {{ lookup('env','USER_PWD') | default('postgres', true) }} 
+        -h {{ dburl }}
+        -p {{ lookup('env','PORT') | default('5432', true) }} 
+        -c {{ lookup('env','TEST_CONCURRENCY') | default('1', true) }} 
+        -w {{ lookup('env','TEST_WORKERS') | default('10', true) }} 
+        -t {{ lookup('env','TEST_DURATION') | default('60', true) }}
+      register: mvn_result
+
+    - name: Print Maven test results
+      debug:
+        var: mvn_result.stdout

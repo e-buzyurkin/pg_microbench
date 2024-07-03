@@ -1,13 +1,32 @@
-## How to run
+
+This is benchmark for every query type.
+
+## Technologies used
+1) Java
+2) Maven
+3) TestNG
+4) bpfTrace
+
+## How to run 
+
+### Linux
 
 All tests:
 
 ```
-mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5433'" -f pom.xml
+sudo mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5432'" -f pom.xml
 ```
 Single test:
 ```
-mvn test -DTest=TestResult -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5433'" -f pom.xml
+sudo mvn test -Dtest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
+```
+Drop all created during tests tables:
+```
+mvn compile exec:java -Dexec.mainClass="utils.DropTables" -Dexec.args="-h localhost -p 5432" -f pom.xml
+```
+Without compile:
+```
+mvn exec:java -Dexec.mainClass="utils.DropTables" -Dexec.args="-h localhost -p 5432" -f pom.xml
 ```
 
 ## Args

@@ -1,19 +1,17 @@
 package operations.utils;
 
 import bench.v2.Results;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.testng.Assert;
 
 import java.io.*;
-import java.util.List;
+
 
 import static bench.V2.*;
+import static operations.utils.JsonOperations.explainResultsJson;
+import static operations.utils.JsonOperations.findPlanElement;
 
 public class TestUtils {
 
@@ -29,9 +27,10 @@ public class TestUtils {
         }
     }
 
-    public static void testQuery(String query, Object... binds) {
-
-        Results parallelState = parallel((state) -> sql(query, binds));
+    public static void testQuery(Logger logger, String query, Object... binds) {
+        Results parallelState = parallel((state) -> sql("explain analyze " + query, binds));
+        QueryProfiler profiler = new QueryProfiler();
+        profiler.profile(logger);
         if (parallelState != null) {
             openWriter();
             writer.print(parallelState.iterations + " ");
@@ -43,42 +42,7 @@ public class TestUtils {
 
     public static void checkTime(Logger logger, JsonObject explainResults) {
         String executionTime = explainResults.get("Execution Time").getAsString();
-        logger.info("Sql query completed after " + executionTime + " ms");
-    }
-
-    public static JsonObject explainResultsJson(String sql, Object... binds) {
-        List<PGobject> pGobjectList = select("explain (analyze, verbose, buffers, costs off, format json) " + sql, binds);
-        Gson gson = new Gson();
-        JsonArray jsonArray = gson.fromJson(pGobjectList.get(0).getValue(), JsonArray.class);
-        return jsonArray.get(0).getAsJsonObject();
-    }
-
-    private static JsonPlan findPlanElementRecursive(JsonObject jsonObject, String key, String planElement) {
-        JsonPlan result = new JsonPlan("", jsonObject);
-        if (jsonObject.has(key)) {
-            result = new JsonPlan(jsonObject.get(key).getAsString(), jsonObject);
-        }
-        if (jsonObject.getAsJsonArray("Plans") != null) {
-            String curPlanElement = "";
-            if (jsonObject.has(key)) {
-                curPlanElement = jsonObject.get(key).getAsString();
-            }
-            if (curPlanElement.equals(planElement)) {
-                return new JsonPlan(curPlanElement, jsonObject);
-            }
-            JsonArray jsonArray = jsonObject.getAsJsonArray("Plans");
-            for (JsonElement jsonElement : jsonArray) {
-                result = findPlanElementRecursive(jsonElement.getAsJsonObject(), key, planElement);
-                if (result.getPlanElement().equals(planElement)) {
-                    return result;
-                }
-            }
-        }
-        return result;
-    }
-
-    public static JsonPlan findPlanElement(JsonObject jsonObject, String key, String element) {
-        return findPlanElementRecursive(jsonObject.getAsJsonObject("Plan"), key, element);
+        logger.info("Sql query completed after {} ms", executionTime);
     }
 
     public static void testQueriesOnMainPlan(Logger logger, String[] queries, String expectedPlanType) {
@@ -89,7 +53,7 @@ public class TestUtils {
                     get("Node Type").getAsString();
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 
@@ -100,7 +64,7 @@ public class TestUtils {
             String actualPlanType = findPlanElement(resultsJson, "Node Type", expectedPlanType).getPlanElement();
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 
@@ -109,11 +73,11 @@ public class TestUtils {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
-            String actualPlanElement = TestUtils.findPlanElement(resultsJson, planElementName, expectedPlanElement).
+            String actualPlanElement = findPlanElement(resultsJson, planElementName, expectedPlanElement).
                     getJson().get(planElementName).getAsString();
             assertPlanElements(logger, query, planElementName, expectedPlanElement, actualPlanElement);
             checkTime(logger, resultsJson);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 
@@ -122,7 +86,7 @@ public class TestUtils {
         for (String query : queries) {
             explain(logger, query);
             JsonObject resultsJson = explainResultsJson(query);
-            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, "Node Type", expectedPlanType);
+            JsonPlan jsonPlan = findPlanElement(resultsJson, "Node Type", expectedPlanType);
             String actualPlanType = jsonPlan.getPlanElement();
             String actualPlanElement = "";
             if (jsonPlan.getJson().has(planElementName)) {
@@ -130,7 +94,7 @@ public class TestUtils {
             }
             assertPlans(logger, query, expectedPlanType, actualPlanType);
             assertPlanElements(logger, query, planElementName, expectedPlanElement, actualPlanElement);
-            TestUtils.testQuery(query);
+            TestUtils.testQuery(logger, query);
         }
     }
 

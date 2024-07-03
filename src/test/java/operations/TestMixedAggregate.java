@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static bench.V2.*;
+import static operations.utils.JsonOperations.explainResultsJson;
+import static operations.utils.JsonOperations.findPlanElement;
 
 public class TestMixedAggregate extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestMixedAggregate.class);
@@ -23,8 +25,8 @@ public class TestMixedAggregate extends TestPlan {
     public static void testQueries(String[] queries) {
         for (String query : queries) {
             explain(logger, query);
-            JsonObject resultsJson = TestUtils.explainResultsJson(query);
-            JsonPlan jsonPlan = TestUtils.findPlanElement(resultsJson, planElementName, expectedPlanElementName);
+            JsonObject resultsJson = explainResultsJson(query);
+            JsonPlan jsonPlan = findPlanElement(resultsJson, planElementName, expectedPlanElementName);
             String actualStrategy = jsonPlan.getPlanElement();
             String actualPlanType = jsonPlan.getJson().get("Node Type").getAsString();
             try {
@@ -34,7 +36,7 @@ public class TestMixedAggregate extends TestPlan {
                 Assert.assertEquals(expectedPlanElementName, actualStrategy);
                 logger.info("Plan check completed for " + expectedPlanElementName + " plan strategy in query: " + query);
                 TestUtils.checkTime(logger, resultsJson);
-                TestUtils.testQuery(query);
+                TestUtils.testQuery(logger, query);
             } catch (AssertionError e) {
                 logger.error(e + " in query: " + query);
                 TestUtils.openWriter();

@@ -1,0 +1,265 @@
+#!/usr/bin/env bpftrace
+
+BEGIN
+{
+
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pgstat_report_activity
+{
+    @current_statement[pid] = str(arg0);
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
+{
+    $time = nsecs;
+    printf("{\"process\": %d, \"type\": \"query_start\", \"query_type\": \"%s\"}\n", pid, str(arg0));
+    @query_start[pid] = $time;
+    @phase_done[pid] = $time;
+    @query_trigger[pid] = 1;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
+{
+    $time = nsecs;
+    $query_end = $time - @query_start[pid];
+    printf("{\"process\": %d, \"type\": \"query_done\", \"time_before\": %d, \"time_in\": %d}\n", pid, ($time - @phase_done[pid])/1000, $query_end/1000);
+    @parse[pid] = (uint64)0;
+    @rewrite[pid] = (uint64)0;
+    @plan[pid] = (uint64)0;
+    @execute[pid] = (uint64)0;
+    @query_trigger[pid] = 0;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
+{
+    $time = nsecs;
+    if ( @query_trigger[pid] == 1 )
+    {
+        @to_parse[pid] = $time - @phase_done[pid];
+    }
+    else
+    {
+        @to_parse[pid] = 0;
+    }
+    @parse_start[pid] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
+{
+    $time = nsecs;
+    @parse[pid] += ($time - @parse_start[pid]);
+    printf("{\"process\": %d, \"type\": \"parse\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_parse[pid]/1000, ($time - @parse_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
+{
+    $time = nsecs;
+    @to_rewrite[pid] = $time - @phase_done[pid];
+    @rewrite_start[pid] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
+{
+    $time = nsecs;
+    @rewrite[pid] += ($time - @rewrite_start[pid]);
+    printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
+{
+    $time = nsecs;
+    @to_rewrite[pid] = ($time - @phase_done[pid]);
+    @rewrite_start[pid] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
+{
+    $time = nsecs;
+    @rewrite[pid] += ($time - @rewrite_start[pid]);
+    printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
+{
+    $time = nsecs;
+    @to_rewrite[pid] = ($time - @phase_done[pid]);
+    @rewrite_start[pid] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
+{
+    $time = nsecs;
+    @rewrite[pid] += ($time - @rewrite_start[pid]);
+    printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
+{
+    $time = nsecs;
+    @to_plan[pid] = ($time - @phase_done[pid]);
+    @plan_start[pid] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
+{
+    $time = nsecs;
+    @plan[pid] += ($time - @plan_start[pid]);
+    printf("{\"process\": %d, \"type\": \"plan\", \"time_before\": %d, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, @to_plan[pid]/1000, ($time - @plan_start[pid])/1000, @current_statement[pid]);
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:PortalRun
+{
+    $time = nsecs;
+    @portal_counter[pid] += 1;
+    @to_execute[pid, @portal_counter[pid]] = $time - @phase_done[pid];
+    @execute_start[pid, @portal_counter[pid]] = $time;
+    @op_phase_done[pid] = $time;
+}
+
+uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
+{
+    $time = nsecs;
+    if ( @portal_counter[pid] == 1 )
+    {
+        printf("{\"process\": %d, \"type\": \"execute\", \"time_before\": %d, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, @to_execute[pid, @portal_counter[pid]]/1000, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
+    }
+    else
+    {
+        printf("{\"process\": %d, \"type\": \"execute\", \"time_before\": 0, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
+    }
+    @portal_counter[pid] -= 1;
+    @phase_done[pid] = $time;
+}
+
+uprobe:/usr/local/pgsql/bin/postgres:ExecAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecAppend,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecCTEScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecDelete,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecFinalizeAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecForeignScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecFunctionScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGather,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGatherMerge,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGroup,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGroupAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashAntiJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashSemiJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashSetOp,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecIncrementalSort,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecInsert,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecLockRows,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMaterialize,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMemoize,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMerge,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMergeAppend,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMixedAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecNestedLoop,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelAppend,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelHash,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelHashJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelSeqScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecProjectSet,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecRecursiveUnion,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecResult,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSampleScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSeqScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSetOp,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSort,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSubPlan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSubqueryScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecTableFunctionScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecTidScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecUnique,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecUpdate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecValues,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecWindowAgg,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecWorkTableScan
+{
+      @op_start[pid] = nsecs;
+}
+
+
+uretprobe:/usr/local/pgsql/bin/postgres:ExecAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecAppend,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecCTEScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecDelete,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecFinalizeAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecForeignScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecFunctionScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGather,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGatherMerge,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGroup,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGroupAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashAntiJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashSemiJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashSetOp,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecIncrementalSort,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecInsert,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecLockRows,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMaterialize,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMemoize,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMerge,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMergeAppend,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMixedAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecNestedLoop,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelAppend,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelHash,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelHashJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelSeqScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecProjectSet,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecRecursiveUnion,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecResult,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSampleScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSeqScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSetOp,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSort,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSubPlan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSubqueryScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecTableFunctionScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecTidScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecUnique,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecUpdate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecValues,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecWindowAgg,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecWorkTableScan
+{
+    @op_counter[pid, probe] += 1;
+    $time = nsecs;
+    $duration = $time - @op_start[pid];
+    printf("{\"process\": %u, \"type\": \"%s\", \"op_counter\": %u, \"time_in\": %u, \"statement\": \"%s\"}\n", pid, probe, @op_counter[pid, probe], $duration/1000, @current_statement[pid]);
+    @op_start[pid] = $time;
+}
+
+END
+{
+    clear(@query_start);
+    clear(@query_trigger);
+    clear(@to_parse);
+    clear(@parse_start);
+    clear(@parse);
+    clear(@to_rewrite);
+    clear(@rewrite_start);
+    clear(@rewrite);
+    clear(@to_plan);
+    clear(@plan_start);
+    clear(@plan);
+    clear(@to_execute);
+    clear(@execute_start);
+    clear(@execute);
+    clear(@portal_counter);
+    clear(@phase_done);
+    clear(@current_statement);
+
+    clear(@op_start);
+    clear(@op_counter);
+}

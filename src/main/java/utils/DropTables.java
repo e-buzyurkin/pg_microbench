@@ -1,4 +1,4 @@
-package operations.utils;
+package utils;
 import static bench.V2.*;
 
 public class DropTables {
