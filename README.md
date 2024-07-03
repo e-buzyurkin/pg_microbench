@@ -14,11 +14,11 @@ This is benchmark for every query type.
 All tests:
 
 ```
-mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5432'" -f pom.xml
+sudo mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5432'" -f pom.xml
 ```
 Single test:
 ```
-mvn test -Dtest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
+sudo mvn test -Dtest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
 ```
 Drop all created during tests tables:
 ```
