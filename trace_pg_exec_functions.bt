@@ -10,6 +10,7 @@ uprobe:/usr/local/pgsql/bin/postgres:pgstat_report_activity
     @current_statement[pid] = str(arg0);
 }
 
+//Start query process tracing
 uprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
 {
     $time = nsecs;
@@ -19,6 +20,7 @@ uprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
     @query_trigger[pid] = 1;
 }
 
+//Query is done here
 uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
 {
     $time = nsecs;
@@ -31,6 +33,7 @@ uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
     @query_trigger[pid] = 0;
 }
 
+//Start parsing
 uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
     $time = nsecs;
@@ -45,6 +48,7 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
     @parse_start[pid] = $time;
 }
 
+//End parsing
 uretprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
     $time = nsecs;
@@ -53,6 +57,7 @@ uretprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
     @phase_done[pid] = $time;
 }
 
+//Here rewriting functions
 uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
 {
     $time = nsecs;
@@ -98,6 +103,7 @@ uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
     @phase_done[pid] = $time;
 }
 
+//Start planning
 uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
@@ -105,6 +111,7 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
     @plan_start[pid] = $time;
 }
 
+//End planning
 uretprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
@@ -113,6 +120,7 @@ uretprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
     @phase_done[pid] = $time;
 }
 
+//Start execute query
 uprobe:/usr/local/pgsql/bin/postgres:PortalRun
 {
     $time = nsecs;
@@ -122,6 +130,7 @@ uprobe:/usr/local/pgsql/bin/postgres:PortalRun
     @op_phase_done[pid] = $time;
 }
 
+//End executing query
 uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
 {
     $time = nsecs;
@@ -137,6 +146,7 @@ uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
     @phase_done[pid] = $time;
 }
 
+// Tracing phases of executing query
 uprobe:/usr/local/pgsql/bin/postgres:ExecAggregate,
          uprobe:/usr/local/pgsql/bin/postgres:ExecAppend,
          uprobe:/usr/local/pgsql/bin/postgres:ExecCTEScan,

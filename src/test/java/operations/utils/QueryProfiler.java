@@ -32,7 +32,10 @@ public class QueryProfiler {
                     || probeData.getType().equals("plan") || probeData.getType().equals("rewrite")
                     || probeData.getType().equals("execute")) {
                         allTime += addToHashMap("other", probeData.getTimeBefore());
+                    } else {
+                        probeData.setType((probeData.getType().split(":"))[2].replace("Exec", ""));
                     }
+
                     allTime += addToHashMap(probeData.getType(), probeData.getTimeIn());
                 } catch (Exception e) {
                     e.printStackTrace();

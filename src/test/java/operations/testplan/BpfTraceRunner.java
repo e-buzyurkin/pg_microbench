@@ -71,7 +71,8 @@ public class BpfTraceRunner {
         builder.redirectError(ProcessBuilder.Redirect.to(new File(localErrorFile)));
         try {
             bpfTraceProcess = builder.start();
-        } catch (IOException e) {
+            Thread.sleep(5000);
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -95,6 +96,7 @@ public class BpfTraceRunner {
             channelExec.setCommand(command);
             channelExec.setErrStream(System.err);
             channelExec.connect();
+            Thread.sleep(5000);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
