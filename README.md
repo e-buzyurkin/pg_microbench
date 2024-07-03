@@ -7,6 +7,18 @@ This is benchmark for every query type.
 3) TestNG
 4) bpfTrace
 
+## Config
+Install "bpftrace" and "bpftrace-dbgsym"
+
+```
+echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse
+deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse
+deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" | \
+sudo tee -a /etc/apt/sources.list.d/ddebs.list
+sudo apt install ubuntu-dbgsym-keyring
+sudo apt update
+sudo apt install bpftrace-dbgsym
+```
 ## How to run 
 
 ### Linux
