@@ -1,12 +1,9 @@
-package operations.testplan;
+package operations.bpftrace;
 
 import com.jcraft.jsch.*;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,46 +11,28 @@ import java.util.concurrent.TimeUnit;
 public class BpfTraceRunner {
 
     private Process bpfTraceProcess;
-    private String bpfTraceScript;
-    private String remoteLogFile;
-    private String remoteErrorFile;
-    private String localLogFile;
-    private String localErrorFile;
-    private String sshHost;
-    private String sshUser;
-    private String sshPassword;
+    private final String bpfTraceScript;
+    private final String remoteLogFile;
+    private final String remoteErrorFile;
+    private final String localLogFile;
+    private final String localErrorFile;
+    private final String sshHost;
+    private final String sshUser;
+    private final String sshPassword;
     private Session sshSession;
-    private boolean useSSH;
+    private final boolean useSSH;
     private ScheduledExecutorService scheduler;
-    private static final String path = "bpfTrace.properties";
 
     public BpfTraceRunner() {
-        Properties properties = new Properties();
-        String propertiesFilePath = getPropertiesFilePath(path);
-
-        try (InputStream input = Files.newInputStream(Paths.get(propertiesFilePath))) {
-            properties.load(input);
-            bpfTraceScript = properties.getProperty("bpfTraceScript");
-            remoteLogFile = properties.getProperty("remoteLogFile");
-            remoteErrorFile = properties.getProperty("remoteErrorFile");
-            localLogFile = properties.getProperty("localLogFile");
-            localErrorFile = properties.getProperty("localErrorFile");
-            sshHost = properties.getProperty("sshHost");
-            sshUser = properties.getProperty("sshUser");
-            sshPassword = properties.getProperty("sshPassword");
-
-            // Определить, нужно ли использовать SSH
-            useSSH = sshHost != null && !sshHost.isEmpty() && sshUser != null && !sshUser.isEmpty();
-
-        } catch (IOException ex) {
-            System.err.println("Error loading properties file: " + propertiesFilePath);
-            ex.printStackTrace();
-        }
-    }
-
-    private String getPropertiesFilePath(String fileName) {
-        String workingDir = System.getProperty("user.dir");
-        return Paths.get(workingDir, fileName).toString();
+        bpfTraceScript = BpfTraceConf.getBpfTraceScript();
+        remoteLogFile = BpfTraceConf.getRemoteLogFile();
+        remoteErrorFile = BpfTraceConf.getRemoteErrorFile();
+        localLogFile = BpfTraceConf.getLocalLogFile();
+        localErrorFile = BpfTraceConf.getLocalErrorFile();
+        sshHost = BpfTraceConf.getSshHost();
+        sshUser = BpfTraceConf.getSshUser();
+        sshPassword = BpfTraceConf.getSshPassword();
+        useSSH  = sshHost != null && !sshHost.isEmpty() && sshUser != null && !sshUser.isEmpty();
     }
 
     public void startBpfTrace() {
@@ -142,3 +121,5 @@ public class BpfTraceRunner {
         }
     }
 }
+
+
