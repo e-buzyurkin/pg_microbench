@@ -127,7 +127,6 @@ uprobe:/usr/local/pgsql/bin/postgres:PortalRun
     @portal_counter[pid] += 1;
     @to_execute[pid, @portal_counter[pid]] = $time - @phase_done[pid];
     @execute_start[pid, @portal_counter[pid]] = $time;
-    @op_phase_done[pid] = $time;
 }
 
 //End executing query

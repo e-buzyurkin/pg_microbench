@@ -3,6 +3,7 @@ package operations.utils;
 import bench.v2.Results;
 import com.google.gson.JsonObject;
 
+import operations.bpftrace.BpfTraceRunner;
 import org.slf4j.Logger;
 import org.testng.Assert;
 
@@ -28,7 +29,9 @@ public class TestUtils {
     }
 
     public static void testQuery(Logger logger, String query, Object... binds) {
-        Results parallelState = parallel((state) -> sql("explain analyze " + query, binds));
+        BpfTraceRunner runner = new BpfTraceRunner();
+        runner.startBpfTrace();
+        Results parallelState = parallel((state) -> sql(query, binds));
         QueryProfiler profiler = new QueryProfiler();
         profiler.profile(logger);
         if (parallelState != null) {
@@ -38,6 +41,7 @@ public class TestUtils {
             writer.println(parallelState.tpsLast5sec);
             writer.close();
         }
+        runner.stopBpfTrace();
     }
 
     public static void checkTime(Logger logger, JsonObject explainResults) {
