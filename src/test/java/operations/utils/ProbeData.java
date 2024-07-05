@@ -1,43 +1,24 @@
 package operations.utils;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
-@Setter
-
 public class ProbeData {
-    @JsonProperty("process")
-    private Long process;
-
-    @JsonProperty("type")
     private String type;
+    private final Map<String, HashMap<String, Integer>> data = new HashMap<>();
 
-    @JsonProperty("query_type")
-    private String queryType;
-
-    @JsonProperty("time_before")
-    private Long timeBefore;
-
-    @JsonProperty("time_in")
-    private Long timeIn;
-
-    @JsonProperty("statement")
-    private String statement;
-
-    @JsonProperty("op_counter")
-    private Long opCounter;
+    public Map<String, Integer> getKeyData(String key) {
+        return data.get(key);
+    }
 
     @Override
     public String toString() {
-        return "ProbeData {" +
-                "\"process\" : " + process
-                + "\"type\" : \"" + type + "\""
-                + "\"queryType\" : \"" + queryType + "\""
-                + ", \"timeBefore\" : " + timeBefore
-                + ", \"timeIn\" : " + timeIn
-                + ", \"statement\" : \"" + statement + "\""
-                + ", \"opCounter\" : " + opCounter;
+        return "Probe{" +
+                "\"type\" : " + type + ", " +
+                "\"data\" : " + data +
+                '}';
     }
 }

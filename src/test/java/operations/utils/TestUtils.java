@@ -32,6 +32,7 @@ public class TestUtils {
         BpfTraceRunner runner = new BpfTraceRunner();
         runner.startBpfTrace();
         Results parallelState = parallel((state) -> sql(query, binds));
+        runner.stopBpfTrace();
         QueryProfiler profiler = new QueryProfiler();
         profiler.profile(logger);
         if (parallelState != null) {
@@ -41,7 +42,6 @@ public class TestUtils {
             writer.println(parallelState.tpsLast5sec);
             writer.close();
         }
-        runner.stopBpfTrace();
     }
 
     public static void checkTime(Logger logger, JsonObject explainResults) {

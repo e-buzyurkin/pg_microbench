@@ -14,7 +14,7 @@ uprobe:/usr/local/pgsql/bin/postgres:pgstat_report_activity
 uprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
 {
     $time = nsecs;
-    printf("{\"process\": %d, \"type\": \"query_start\", \"query_type\": \"%s\"}\n", pid, str(arg0));
+    //printf("{\"process\": %d, \"type\": \"query_start\", \"query_type\": \"%s\"}\n", pid, str(arg0));
     @query_start[pid] = $time;
     @phase_done[pid] = $time;
     @query_trigger[pid] = 1;
@@ -25,11 +25,11 @@ uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
 {
     $time = nsecs;
     $query_end = $time - @query_start[pid];
-    printf("{\"process\": %d, \"type\": \"query_done\", \"time_before\": %d, \"time_in\": %d}\n", pid, ($time - @phase_done[pid])/1000, $query_end/1000);
-    @parse[pid] = (uint64)0;
-    @rewrite[pid] = (uint64)0;
-    @plan[pid] = (uint64)0;
-    @execute[pid] = (uint64)0;
+    //printf("{\"process\": %d, \"type\": \"query_done\", \"time_before\": %d, \"time_in\": %d}\n", pid, ($time - @phase_done[pid])/1000, $query_end/1000);
+    //@parse[pid] = (uint64)0;
+    //@rewrite[pid] = (uint64)0;
+    //@plan[pid] = (uint64)0;
+    //@execute[pid] = (uint64)0;
     @query_trigger[pid] = 0;
 }
 
@@ -40,6 +40,7 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
     if ( @query_trigger[pid] == 1 )
     {
         @to_parse[pid] = $time - @phase_done[pid];
+        @between_phases[pid] += (($time - @phase_done[pid])/1000);
     }
     else
     {
@@ -52,8 +53,8 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 uretprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
     $time = nsecs;
-    @parse[pid] += ($time - @parse_start[pid]);
-    printf("{\"process\": %d, \"type\": \"parse\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_parse[pid]/1000, ($time - @parse_start[pid])/1000);
+    @parse[pid] += (($time - @parse_start[pid])/1000);
+    //printf("{\"process\": %d, \"type\": \"parse\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_parse[pid]/1000, ($time - @parse_start[pid])/1000);
     @phase_done[pid] = $time;
 }
 
@@ -62,14 +63,15 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
 {
     $time = nsecs;
     @to_rewrite[pid] = $time - @phase_done[pid];
+    @between_phases[pid] += (($time - @phase_done[pid])/1000);
     @rewrite_start[pid] = $time;
 }
 
 uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
 {
     $time = nsecs;
-    @rewrite[pid] += ($time - @rewrite_start[pid]);
-    printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @rewrite[pid] += (($time - @rewrite_start[pid])/1000);
+    //printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
     @phase_done[pid] = $time;
 }
 
@@ -77,14 +79,15 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
 {
     $time = nsecs;
     @to_rewrite[pid] = ($time - @phase_done[pid]);
+    @between_phases[pid] += (($time - @phase_done[pid])/1000);
     @rewrite_start[pid] = $time;
 }
 
 uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
 {
     $time = nsecs;
-    @rewrite[pid] += ($time - @rewrite_start[pid]);
-    printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @rewrite[pid] += (($time - @rewrite_start[pid])/1000);
+    //printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
     @phase_done[pid] = $time;
 }
 
@@ -92,14 +95,15 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
 {
     $time = nsecs;
     @to_rewrite[pid] = ($time - @phase_done[pid]);
+    @between_phases[pid] += (($time - @phase_done[pid])/1000);
     @rewrite_start[pid] = $time;
 }
 
 uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
 {
     $time = nsecs;
-    @rewrite[pid] += ($time - @rewrite_start[pid]);
-    printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
+    @rewrite[pid] += (($time - @rewrite_start[pid])/1000);
+    //printf("{\"process\": %d, \"type\": \"rewrite\", \"time_before\": %d, \"time_in\": %d}\n", pid, @to_rewrite[pid]/1000, ($time - @rewrite_start[pid])/1000);
     @phase_done[pid] = $time;
 }
 
@@ -108,6 +112,7 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
     @to_plan[pid] = ($time - @phase_done[pid]);
+    @between_phases[pid] += (($time - @phase_done[pid])/1000);
     @plan_start[pid] = $time;
 }
 
@@ -115,8 +120,8 @@ uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 uretprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
-    @plan[pid] += ($time - @plan_start[pid]);
-    printf("{\"process\": %d, \"type\": \"plan\", \"time_before\": %d, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, @to_plan[pid]/1000, ($time - @plan_start[pid])/1000, @current_statement[pid]);
+    @plan[pid] += (($time - @plan_start[pid])/1000);
+    //printf("{\"process\": %d, \"type\": \"plan\", \"time_before\": %d, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, @to_plan[pid]/1000, ($time - @plan_start[pid])/1000, @current_statement[pid]);
     @phase_done[pid] = $time;
 }
 
@@ -126,6 +131,7 @@ uprobe:/usr/local/pgsql/bin/postgres:PortalRun
     $time = nsecs;
     @portal_counter[pid] += 1;
     @to_execute[pid, @portal_counter[pid]] = $time - @phase_done[pid];
+    @between_phases[pid] += (($time - @phase_done[pid])/1000);
     @execute_start[pid, @portal_counter[pid]] = $time;
 }
 
@@ -133,13 +139,15 @@ uprobe:/usr/local/pgsql/bin/postgres:PortalRun
 uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
 {
     $time = nsecs;
-    if ( @portal_counter[pid] == 1 )
+    @execute[pid] += (($time - @execute_start[pid, @portal_counter[pid]])/ 1000);
+    if ( @portal_counter[pid] == 1)
     {
-        printf("{\"process\": %d, \"type\": \"execute\", \"time_before\": %d, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, @to_execute[pid, @portal_counter[pid]]/1000, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
+
+        //printf("{\"process\": %d, \"type\": \"execute\", \"time_before\": %d, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, @to_execute[pid, @portal_counter[pid]]/1000, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
     }
     else
     {
-        printf("{\"process\": %d, \"type\": \"execute\", \"time_before\": 0, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
+        //printf("{\"process\": %d, \"type\": \"execute\", \"time_before\": 0, \"time_in\": %d, \"statement\": \"%s\"}\n", pid, ($time - @execute_start[pid, @portal_counter[pid]])/1000, @current_statement[pid]);
     }
     @portal_counter[pid] -= 1;
     @phase_done[pid] = $time;
@@ -245,7 +253,8 @@ uretprobe:/usr/local/pgsql/bin/postgres:ExecAggregate,
     @op_counter[pid, probe] += 1;
     $time = nsecs;
     $duration = $time - @op_start[pid];
-    printf("{\"process\": %u, \"type\": \"%s\", \"op_counter\": %u, \"time_in\": %u, \"statement\": \"%s\"}\n", pid, probe, @op_counter[pid, probe], $duration/1000, @current_statement[pid]);
+    @node[pid, probe] += ($duration / 1000);
+    //printf("{\"process\": %u, \"type\": \"%s\", \"op_counter\": %u, \"time_in\": %u, \"statement\": \"%s\"}\n", pid, probe, @op_counter[pid, probe], $duration/1000, @current_statement[pid]);
     @op_start[pid] = $time;
 }
 
@@ -255,20 +264,23 @@ END
     clear(@query_trigger);
     clear(@to_parse);
     clear(@parse_start);
-    clear(@parse);
+    //clear(@parse);
     clear(@to_rewrite);
     clear(@rewrite_start);
-    clear(@rewrite);
+    //clear(@rewrite);
     clear(@to_plan);
     clear(@plan_start);
-    clear(@plan);
+    //clear(@plan);
     clear(@to_execute);
     clear(@execute_start);
-    clear(@execute);
+    //clear(@execute);
     clear(@portal_counter);
     clear(@phase_done);
     clear(@current_statement);
 
     clear(@op_start);
     clear(@op_counter);
+
+    //clear(@between_phases);
+    //clear(@node);
 }

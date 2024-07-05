@@ -45,7 +45,7 @@ public class BpfTraceRunner {
     }
 
     private void startBpfTraceLocal() {
-        ProcessBuilder builder = new ProcessBuilder("sudo", "bpftrace", bpfTraceScript);
+        ProcessBuilder builder = new ProcessBuilder("sudo", "bpftrace", "-f", "json", bpfTraceScript);
         builder.redirectOutput(ProcessBuilder.Redirect.to(new File(localLogFile)));
         builder.redirectError(ProcessBuilder.Redirect.to(new File(localErrorFile)));
         try {
@@ -54,6 +54,8 @@ public class BpfTraceRunner {
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+        // Register shutdown hook to ensure the process is destroyed
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stopBpfTrace));
     }
 
     private void startBpfTraceRemote() {
@@ -88,7 +90,16 @@ public class BpfTraceRunner {
             }
         } else {
             if (bpfTraceProcess != null) {
-                bpfTraceProcess.destroy();
+                ProcessHandle processHandle = bpfTraceProcess.toHandle();
+                try {
+                    ProcessBuilder builder = new ProcessBuilder("sudo", "kill", "-SIGINT", Long.toString(processHandle.pid()));
+                    builder.inheritIO();
+                    Process killProcess = builder.start();
+                    killProcess.waitFor();
+                    Thread.sleep(3000);
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         if (scheduler != null && !scheduler.isShutdown()) {
@@ -121,5 +132,3 @@ public class BpfTraceRunner {
         }
     }
 }
-
-
