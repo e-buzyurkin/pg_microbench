@@ -27,7 +27,7 @@ public class QueryProfiler {
         phases.add("@other");
         phases.add("@between_phases");
         parse(filePath);
-        logger.info("profiling started");
+        logger.info("Profiling started");
         for (String key : phases) {
             if (profileDataMap.containsKey(key.replace("@", ""))) {
                 logging(logger, key.replace("@", ""), allTime);
