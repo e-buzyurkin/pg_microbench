@@ -17,6 +17,7 @@ import static operations.utils.JsonOperations.findPlanElement;
 public class TestUtils {
 
     private static final String fileName = "results.txt";
+    private static BpfTraceRunner runner;
     public static PrintWriter writer;
 
 
@@ -28,13 +29,25 @@ public class TestUtils {
         }
     }
 
+    private static void startProfiling() {
+        if (params.isProfiling) {
+            runner = new BpfTraceRunner();
+            runner.startBpfTrace();
+        }
+    }
+
+    private static void finishProfiling(Logger logger) {
+        if (params.isProfiling) {
+            runner.stopBpfTrace();
+            QueryProfiler profiler = new QueryProfiler();
+            profiler.profile(logger);
+        }
+    }
+
     public static void testQuery(Logger logger, String query, Object... binds) {
-        BpfTraceRunner runner = new BpfTraceRunner();
-        runner.startBpfTrace();
+        startProfiling();
         Results parallelState = parallel((state) -> sql(query, binds));
-        runner.stopBpfTrace();
-        QueryProfiler profiler = new QueryProfiler();
-        profiler.profile(logger);
+        finishProfiling(logger);
         if (parallelState != null) {
             openWriter();
             writer.print(parallelState.iterations + " ");

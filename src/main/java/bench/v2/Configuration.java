@@ -18,6 +18,7 @@ public class Configuration {
 	public Integer loops;
 	public Integer timeout;
 	public AtomicLong txlimit;
+	public boolean isProfiling;
 	
 	public Integer volume;
 	public Phase runType;

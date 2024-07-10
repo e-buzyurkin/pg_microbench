@@ -180,6 +180,7 @@ public class V2 {
 		opt.addOption(Option.builder("l").hasArg().argName("cnTimeLimit")
 				.desc("max life time of connection in seconds. Disabled by default")
 				.build());
+		opt.addOption("profiling", false, "enable profiling in benchmark");
 
 		params = new Configuration();
 		try {
@@ -193,6 +194,7 @@ public class V2 {
 			
 			params.timeout = Integer.parseInt(cmd.getOptionValue("t", DEFTIMEOUT));
 			params.txlimit = new AtomicLong(Long.parseLong(cmd.getOptionValue("T", "-1")));
+            params.isProfiling = cmd.hasOption("profiling");
 			
 			db = new Database(cmd.getOptionValue("h"), 
 					Integer.parseInt(cmd.getOptionValue("p",DEFPGPORT)),

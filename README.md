@@ -26,12 +26,20 @@ sudo apt install bpftrace-dbgsym
 All tests:
 
 ```
-sudo mvn test -DargLine="-ea -Dargs='-h 10.7.1.25 -p 5432'" -f pom.xml
+mvn test -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
 ```
 Single test:
 ```
-sudo mvn test -Dtest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
+mvn test -Dtest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432'" -f pom.xml
 ```
+Tests with profiling required root rights (bpftrace)
+```
+sudo mvn test -DargLine="-ea -Dargs='-h localhost -p 5432 -profiling'" -f pom.xml
+```
+```
+sudo mvn test -Dtest=TestResult -DargLine="-ea -Dargs='-h localhost -p 5432 -profiling'" -f pom.xml
+```
+
 Drop all created during tests tables:
 ```
 mvn compile exec:java -Dexec.mainClass="utils.DropTables" -Dexec.args="-h localhost -p 5432" -f pom.xml
@@ -49,14 +57,15 @@ mvn exec:java -Dexec.mainClass="utils.DropTables" -Dexec.args="-h localhost -p 5
  -h <host>          database host name
  -l <cnTimeLimit>   max life time of connection in seconds. Disabled by
                     default
- -o <run type>      run type (generate,run). Defaults to EXECUTE
+ -o <run type>      Run type (generate,run). Defaults to EXECUTE
  -p <port>          database port. Defaults to 5432
  -P <password>      user password
- -s <timeout>       warker distribute strategy. Default to none
+ -profiling         enable profiling in benchmark
+ -s <timeout>       Warker distribute strategy. Default to none
  -t <timeout>       test duration. Default to 10
  -T <txLimit>       max amount of transactions. Disabled by default
  -U <username>      user name. Defaults to 'postgres'
- -v <volume>        volume size. Defaults to 10
+ -v <volume>        Volume size. Defaults to 10
  -w <workers>       amount of workers. Defaults to 5
 ```
 
