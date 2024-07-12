@@ -2,41 +2,22 @@ package operations.bpftrace;
 
 import com.jcraft.jsch.*;
 
+import lombok.NoArgsConstructor;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@NoArgsConstructor
 public class BpfTraceRunner {
-
     private Process bpfTraceProcess;
-    private final String bpfTraceScript;
-    private final String remoteLogFile;
-    private final String remoteErrorFile;
-    private final String localLogFile;
-    private final String localErrorFile;
-    private final String sshHost;
-    private final String sshUser;
-    private final String sshPassword;
     private Session sshSession;
-    private final boolean useSSH;
     private ScheduledExecutorService scheduler;
 
-    public BpfTraceRunner() {
-        bpfTraceScript = BpfTraceConf.getBpfTraceScript();
-        remoteLogFile = BpfTraceConf.getRemoteLogFile();
-        remoteErrorFile = BpfTraceConf.getRemoteErrorFile();
-        localLogFile = BpfTraceConf.getLocalLogFile();
-        localErrorFile = BpfTraceConf.getLocalErrorFile();
-        sshHost = BpfTraceConf.getSshHost();
-        sshUser = BpfTraceConf.getSshUser();
-        sshPassword = BpfTraceConf.getSshPassword();
-        useSSH  = sshHost != null && !sshHost.isEmpty() && sshUser != null && !sshUser.isEmpty();
-    }
-
     public void startBpfTrace() {
-        if (useSSH) {
+        if (BpfTraceConf.isUseSSH()) {
             startBpfTraceRemote();
             startLogFileUpdateTask();
         } else {
@@ -45,9 +26,9 @@ public class BpfTraceRunner {
     }
 
     private void startBpfTraceLocal() {
-        ProcessBuilder builder = new ProcessBuilder("sudo", "bpftrace", "-f", "json", bpfTraceScript);
-        builder.redirectOutput(ProcessBuilder.Redirect.to(new File(localLogFile)));
-        builder.redirectError(ProcessBuilder.Redirect.to(new File(localErrorFile)));
+        ProcessBuilder builder = new ProcessBuilder("sudo", "bpftrace", "-f", "json", BpfTraceConf.getBpfTraceScript());
+        builder.redirectOutput(ProcessBuilder.Redirect.to(new File(BpfTraceConf.getLocalLogFile())));
+        builder.redirectError(ProcessBuilder.Redirect.to(new File(BpfTraceConf.getLocalErrorFile())));
         try {
             bpfTraceProcess = builder.start();
             Thread.sleep(5000);
@@ -61,8 +42,8 @@ public class BpfTraceRunner {
     private void startBpfTraceRemote() {
         try {
             JSch jsch = new JSch();
-            sshSession = jsch.getSession(sshUser, sshHost, 22);
-            sshSession.setPassword(sshPassword);
+            sshSession = jsch.getSession(BpfTraceConf.getSshUser(), BpfTraceConf.getSshHost(), 22);
+            sshSession.setPassword(BpfTraceConf.getSshPassword());
 
             // Avoid asking for key confirmation
             java.util.Properties config = new java.util.Properties();
@@ -71,7 +52,7 @@ public class BpfTraceRunner {
 
             sshSession.connect();
 
-            String command = "sudo bpftrace " + bpfTraceScript + " > " + remoteLogFile + " 2> " + remoteErrorFile;
+            String command = "sudo bpftrace " + BpfTraceConf.getBpfTraceScript() + " > " + BpfTraceConf.getRemoteLogFile() + " 2> " + BpfTraceConf.getRemoteErrorFile();
 
             ChannelExec channelExec = (ChannelExec) sshSession.openChannel("exec");
             channelExec.setCommand(command);
@@ -84,7 +65,7 @@ public class BpfTraceRunner {
     }
 
     public void stopBpfTrace() {
-        if (useSSH) {
+        if (BpfTraceConf.isUseSSH()) {
             if (sshSession != null && sshSession.isConnected()) {
                 sshSession.disconnect();
             }
@@ -113,7 +94,7 @@ public class BpfTraceRunner {
     }
 
     private void copyLogsToLocal() {
-        if (useSSH) {
+        if (BpfTraceConf.isUseSSH()) {
             if (sshSession == null || !sshSession.isConnected()) {
                 throw new IllegalStateException("SSH session is not connected.");
             }
@@ -122,8 +103,8 @@ public class BpfTraceRunner {
                 ChannelSftp sftpChannel = (ChannelSftp) sshSession.openChannel("sftp");
                 sftpChannel.connect();
 
-                sftpChannel.get(remoteLogFile, localLogFile);
-                sftpChannel.get(remoteErrorFile, localErrorFile);
+                sftpChannel.get(BpfTraceConf.getRemoteLogFile(), BpfTraceConf.getLocalLogFile());
+                sftpChannel.get(BpfTraceConf.getRemoteErrorFile(), BpfTraceConf.getLocalErrorFile());
 
                 sftpChannel.disconnect();
             } catch (Exception e) {

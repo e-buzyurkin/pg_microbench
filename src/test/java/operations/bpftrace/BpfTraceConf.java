@@ -1,7 +1,6 @@
 package operations.bpftrace;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +25,8 @@ public class BpfTraceConf {
     private static String sshUser;
     @Getter
     private static String sshPassword;
+    @Getter
+    private static boolean useSSH;
 
     static {
         Properties properties = new Properties();
@@ -44,6 +45,12 @@ public class BpfTraceConf {
         } catch (IOException ex) {
             System.err.println("Error loading properties file: " + propertiesFilePath);
             ex.printStackTrace();
+        }
+
+        try {
+            useSSH = !sshHost.isBlank() && !sshUser.isBlank();
+        } catch (NullPointerException e) {
+            useSSH = false;
         }
     }
 
