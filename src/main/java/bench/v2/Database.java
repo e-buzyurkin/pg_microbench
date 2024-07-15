@@ -36,8 +36,6 @@ public class Database {
 	public Strategies dataSourceStrategies;
 	public IDistributionStrategy currentStrategy;
 	
-	public Integer NextDsNum;
-	
 	public String host;
 	public int port;
 	public String dbName;
@@ -64,7 +62,6 @@ public class Database {
 			synchronized (this) {
 				if (ds == null) {
 					List<DataSource> x = new ArrayList<DataSource>();
-					NextDsNum = 0;
 					if (pooling) {
 						hosts = host.split(",");
 						for ( String h: hosts)

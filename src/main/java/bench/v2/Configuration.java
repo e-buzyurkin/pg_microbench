@@ -12,10 +12,8 @@ public class Configuration {
 	}
 
 	/* Worker parameters */
-	public Integer startPoint;
 	public Integer workers;
 	public Integer concurrency;
-	public Integer loops;
 	public Integer timeout;
 	public AtomicLong txlimit;
 	public boolean isProfiling;

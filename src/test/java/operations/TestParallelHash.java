@@ -9,7 +9,6 @@ import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static bench.V2.requireData;
 
 public class TestParallelHash extends TestPlan {
     private static final Logger logger = LoggerFactory.getLogger(TestParallelHash.class);
