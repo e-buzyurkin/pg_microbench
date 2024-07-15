@@ -5,13 +5,13 @@ BEGIN
 
 }
 
-uprobe:/home/ubuntu/postgres/install/bin/postgres:pgstat_report_activity
+uprobe:/usr/local/pgsql/bin/postgres:pgstat_report_activity
 {
     @current_statement[pid] = str(arg0);
 }
 
 //Start query process tracing
-uprobe:/home/ubuntu/postgres/install/bin/postgres:exec_simple_query
+uprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
 {
     $time = nsecs;
     //printf("{\"process\": %d, \"type\": \"query_start\", \"query_type\": \"%s\"}\n", pid, str(arg0));
@@ -21,7 +21,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:exec_simple_query
 }
 
 //Query is done here
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:exec_simple_query
+uretprobe:/usr/local/pgsql/bin/postgres:exec_simple_query
 {
     $time = nsecs;
     $query_end = $time - @query_start[pid];
@@ -34,7 +34,7 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:exec_simple_query
 }
 
 //Start parsing
-uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_parse_query
+uprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
     $time = nsecs;
     if ( @query_trigger[pid] == 1 )
@@ -50,7 +50,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_parse_query
 }
 
 //End parsing
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_parse_query
+uretprobe:/usr/local/pgsql/bin/postgres:pg_parse_query
 {
     $time = nsecs;
     @parse[pid] += (($time - @parse_start[pid])/1000);
@@ -59,7 +59,7 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_parse_query
 }
 
 //Here rewriting functions
-uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_fixedparams
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
 {
     $time = nsecs;
     @to_rewrite[pid] = $time - @phase_done[pid];
@@ -67,7 +67,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_fixedpa
     @rewrite_start[pid] = $time;
 }
 
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_fixedparams
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_fixedparams
 {
     $time = nsecs;
     @rewrite[pid] += (($time - @rewrite_start[pid])/1000);
@@ -75,7 +75,7 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_fixe
     @phase_done[pid] = $time;
 }
 
-uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_varparams
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
 {
     $time = nsecs;
     @to_rewrite[pid] = ($time - @phase_done[pid]);
@@ -83,7 +83,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_varpara
     @rewrite_start[pid] = $time;
 }
 
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_varparams
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_varparams
 {
     $time = nsecs;
     @rewrite[pid] += (($time - @rewrite_start[pid])/1000);
@@ -91,7 +91,7 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_varp
     @phase_done[pid] = $time;
 }
 
-uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_withcb
+uprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
 {
     $time = nsecs;
     @to_rewrite[pid] = ($time - @phase_done[pid]);
@@ -99,7 +99,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_withcb
     @rewrite_start[pid] = $time;
 }
 
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_withcb
+uretprobe:/usr/local/pgsql/bin/postgres:pg_analyze_and_rewrite_withcb
 {
     $time = nsecs;
     @rewrite[pid] += (($time - @rewrite_start[pid])/1000);
@@ -108,7 +108,7 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_analyze_and_rewrite_with
 }
 
 //Start planning
-uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_plan_query
+uprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
     @to_plan[pid] = ($time - @phase_done[pid]);
@@ -117,7 +117,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:pg_plan_query
 }
 
 //End planning
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_plan_query
+uretprobe:/usr/local/pgsql/bin/postgres:pg_plan_query
 {
     $time = nsecs;
     @plan[pid] += (($time - @plan_start[pid])/1000);
@@ -126,7 +126,7 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:pg_plan_query
 }
 
 //Start execute query
-uprobe:/home/ubuntu/postgres/install/bin/postgres:PortalRun
+uprobe:/usr/local/pgsql/bin/postgres:PortalRun
 {
     $time = nsecs;
     @portal_counter[pid] += 1;
@@ -136,7 +136,7 @@ uprobe:/home/ubuntu/postgres/install/bin/postgres:PortalRun
 }
 
 //End executing query
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:PortalRun
+uretprobe:/usr/local/pgsql/bin/postgres:PortalRun
 {
     $time = nsecs;
     @execute[pid] += (($time - @execute_start[pid, @portal_counter[pid]])/ 1000);
@@ -154,101 +154,101 @@ uretprobe:/home/ubuntu/postgres/install/bin/postgres:PortalRun
 }
 
 // Tracing phases of executing query
-uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecAggregate,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecAppend,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecCTEScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecDelete,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecFinalizeAggregate,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecForeignScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecFunctionScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGather,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGatherMerge,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGroup,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGroupAggregate,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashAggregate,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashAntiJoin,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashJoin,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashSemiJoin,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashSetOp,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecIncrementalSort,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecInsert,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecLockRows,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMaterialize,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMemoize,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMerge,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMergeAppend,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMixedAggregate,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecNestedLoop,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelAppend,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelHash,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelHashJoin,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelSeqScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecProjectSet,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecRecursiveUnion,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecResult,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSampleScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSeqScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSetOp,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSort,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSubPlan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSubqueryScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecTableFunctionScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecTidScan,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecUnique,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecUpdate,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecValues,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecWindowAgg,
-         uprobe:/home/ubuntu/postgres/install/bin/postgres:ExecWorkTableScan
+uprobe:/usr/local/pgsql/bin/postgres:ExecAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecAppend,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecCTEScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecDelete,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecFinalizeAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecForeignScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecFunctionScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGather,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGatherMerge,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGroup,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecGroupAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashAntiJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashSemiJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecHashSetOp,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecIncrementalSort,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecInsert,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecLockRows,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMaterialize,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMemoize,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMerge,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMergeAppend,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecMixedAggregate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecNestedLoop,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelAppend,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelHash,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelHashJoin,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecParallelSeqScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecProjectSet,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecRecursiveUnion,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecResult,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSampleScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSeqScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSetOp,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSort,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSubPlan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecSubqueryScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecTableFunctionScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecTidScan,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecUnique,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecUpdate,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecValues,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecWindowAgg,
+         uprobe:/usr/local/pgsql/bin/postgres:ExecWorkTableScan
 {
       @op_start[pid] = nsecs;
 }
 
 
-uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecAggregate,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecAppend,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecCTEScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecDelete,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecFinalizeAggregate,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecForeignScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecFunctionScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGather,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGatherMerge,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGroup,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecGroupAggregate,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashAggregate,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashAntiJoin,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashJoin,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashSemiJoin,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecHashSetOp,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecIncrementalSort,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecInsert,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecLockRows,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMaterialize,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMemoize,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMerge,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMergeAppend,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecMixedAggregate,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecNestedLoop,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelAppend,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelHash,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelHashJoin,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecParallelSeqScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecProjectSet,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecRecursiveUnion,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecResult,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSampleScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSeqScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSetOp,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSort,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSubPlan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecSubqueryScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecTableFunctionScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecTidScan,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecUnique,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecUpdate,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecValues,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecWindowAgg,
-         uretprobe:/home/ubuntu/postgres/install/bin/postgres:ExecWorkTableScan
+uretprobe:/usr/local/pgsql/bin/postgres:ExecAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecAppend,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecCTEScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecDelete,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecFinalizeAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecForeignScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecFunctionScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGather,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGatherMerge,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGroup,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecGroupAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashAntiJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashSemiJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecHashSetOp,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecIncrementalSort,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecInsert,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecLockRows,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMaterialize,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMemoize,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMerge,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMergeAppend,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecMixedAggregate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecNestedLoop,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelAppend,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelHash,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelHashJoin,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecParallelSeqScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecProjectSet,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecRecursiveUnion,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecResult,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSampleScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSeqScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSetOp,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSort,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSubPlan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecSubqueryScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecTableFunctionScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecTidScan,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecUnique,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecUpdate,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecValues,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecWindowAgg,
+         uretprobe:/usr/local/pgsql/bin/postgres:ExecWorkTableScan
 {
     @op_counter[pid, probe] += 1;
     $time = nsecs;

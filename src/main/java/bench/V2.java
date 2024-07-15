@@ -1,8 +1,5 @@
 package bench;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -20,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.HdrHistogram.ConcurrentHistogram;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -64,8 +60,6 @@ public class V2 {
 	private static final String DEFSTRATEGY="none";
 	private static final int fetchSize = 1000;
 	private static ScheduledExecutorService pool;
-
-	private static ConcurrentHistogram histogram = new ConcurrentHistogram(5);
 	
 	public enum RangeOption{
 		RANDOM,
@@ -293,7 +287,7 @@ public class V2 {
 	
 	public static Results parallel(final WorkerUnit x) {
 		List<Snap> metrics = new ArrayList<>(1000);
-		int period = 100;
+		int period = 1000;
 		long durNs;
 		String logResultsIntro;
 		
@@ -313,13 +307,6 @@ public class V2 {
 		if (metrics.size() > 0) {
 			Results r = new Results(metrics, period, durNs);
 			r.logSummary(log, logResultsIntro);
-
-			try {
-				histogram.outputPercentileDistribution(new PrintStream(new File("histogram.hdr")), 1, 1.0);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-
 			return r;
 		} else return null;
 	}
@@ -419,9 +406,6 @@ public class V2 {
 				p.iterations = iterations;
 				p.delta = delta;
 				p.tookNs = d;
-
-				Long tps = iterations * 1000000000 / p.ts;
-				histogram.recordValue(tps);
 				
 				snaps.add(p);
 			}, initialDelay, period, TimeUnit.MILLISECONDS);
