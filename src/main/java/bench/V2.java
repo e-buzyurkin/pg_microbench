@@ -1,5 +1,8 @@
 package bench;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.HdrHistogram.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -59,6 +63,8 @@ public class V2 {
 	private static final String DEFSTRATEGY="none";
 	private static final int fetchSize = 1000;
 	private static ScheduledExecutorService pool;
+
+	private static AtomicHistogram histogram = new AtomicHistogram(100000, 3);
 	
 	public enum RangeOption{
 		RANDOM,
@@ -73,6 +79,16 @@ public class V2 {
 	public static Boolean autoCommit = true;
 	
 	public static AtomicBoolean dbGen = new AtomicBoolean(false);
+
+	private static void printHistogramInFile(PrintStream stream) {
+		RecordedValuesIterator iterator = new RecordedValuesIterator(histogram);
+
+		iterator.reset();
+		while (iterator.hasNext()) {
+			HistogramIterationValue val = iterator.next();
+			stream.println(val.getValueIteratedTo());
+		}
+	}
 
 	public static void sql(String sql, Object... binds) {
 		db.<Boolean>execute((conn) -> {
@@ -119,7 +135,7 @@ public class V2 {
 		return select("explain (analyze, verbose, buffers, costs off) " + sql, binds);
 	}
 
-	public static void explain(Logger log, String sql, Object... binds) {
+	public static void explain(Logger log2, String sql, Object... binds) {
 		List<String> lines = select("explain (analyze, verbose, buffers) " + sql, binds);
 		if (log != null)
 			log.info("Actual plan \n{}\n{}\n{}", lineSep, String.join("\n", lines), lineSep);
@@ -287,7 +303,7 @@ public class V2 {
 	
 	public static Results parallel(final WorkerUnit x) {
 		List<Snap> metrics = new ArrayList<>(1000);
-		int period = 1000;
+		int period = 100;
 		long durNs;
 		String logResultsIntro;
 		
@@ -307,6 +323,19 @@ public class V2 {
 		if (metrics.size() > 0) {
 			Results r = new Results(metrics, period, durNs);
 			r.logSummary(log, logResultsIntro);
+
+			try {
+				histogram.outputPercentileDistribution(new PrintStream(new File("histogram.hdr")), 5, 1.0);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				printHistogramInFile(new PrintStream(new File("histo.txt")));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
 			return r;
 		} else return null;
 	}
@@ -407,6 +436,9 @@ public class V2 {
 				p.delta = delta;
 				p.tookNs = d;
 				
+				Long tps = iterations * 1000000000 / p.ts;
+				histogram.recordValue(tps);
+
 				snaps.add(p);
 			}, initialDelay, period, TimeUnit.MILLISECONDS);
 		}
