@@ -20,10 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.HdrHistogram.AllValuesIterator;
-import org.HdrHistogram.ConcurrentHistogram;
-import org.HdrHistogram.HistogramIterationValue;
-import org.HdrHistogram.RecordedValuesIterator;
+import org.HdrHistogram.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -68,7 +65,7 @@ public class V2 {
 	private static final int fetchSize = 1000;
 	private static ScheduledExecutorService pool;
 
-	private static ConcurrentHistogram histogram = new ConcurrentHistogram(100000, 3);
+	private static AtomicHistogram histogram = new AtomicHistogram(100000, 3);
 	
 	public enum RangeOption{
 		RANDOM,
