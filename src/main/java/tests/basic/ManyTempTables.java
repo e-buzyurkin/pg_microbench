@@ -12,7 +12,7 @@ public class ManyTempTables {
         requireData("select 1 from tt1", "ManyTempTables.sql",0);
 
         String callProcedure = "CALL create_tmp();\n";
-        Var tableID = var(1L, 40L,RangeOption.RANDOM);
+        Var tableID = Var.var(1L, 40L,RangeOption.RANDOM);
 
         parallel((state) -> {
             {

@@ -34,10 +34,9 @@ import bench.v2.Database.CallableStatement;
 import bench.v2.PSQL;
 import bench.v2.Results;
 import bench.v2.Snap;
-import bench.v2.Var;
 import bench.v2.WorkerState;
 import bench.v2.WorkerUnit;
-import bench.v2.strategy.Strategies.StrategyName;
+import bench.v2.strategy.StrategyType;
 
 public class V2 {
 	
@@ -188,7 +187,7 @@ public class V2 {
 						
 			params.workers = Integer.parseInt(cmd.getOptionValue("w", DEFWORKERS));
 			params.concurrency = Integer.parseInt(cmd.getOptionValue("c", DEFCONCURRENCY));
-			params.strategy = StrategyName.valueOf(cmd.getOptionValue("s",DEFSTRATEGY).toUpperCase());
+			params.strategy = StrategyType.valueOf(cmd.getOptionValue("s",DEFSTRATEGY).toUpperCase());
 			params.volume = Integer.parseInt(cmd.getOptionValue("v", DEFVOLUME));
 			params.runType = Phase.valueOf(cmd.getOptionValue("o", DEFRUNTYPE));
 			
@@ -202,7 +201,8 @@ public class V2 {
 					cmd.getOptionValue("U","postgres"),
 					cmd.getOptionValue("P","postgres"),
 					params.workers,
-					Long.parseLong(cmd.getOptionValue("l", "0")) * 1000L
+					Long.parseLong(cmd.getOptionValue("l", "0")) * 1000L,
+					true
 					);
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
@@ -429,68 +429,7 @@ public class V2 {
 		
 		return endTime - startTime;
 	}
-	
-	/* Variables */
-	public static Var var(String sql, RangeOption... options) {
-		Var res = new Var();
-		for (RangeOption option : options ) {
-			if (option == RangeOption.RANDOM) {
-				res.rnd = new Random();
-			}
-			
-			if (option == RangeOption.SHARED) {
-				//TODO: handle shared & rename "shared" to more reasonable
-				throw new UnsupportedOperationException();
-			}
-		}
-		
-		
-		db.selectSingle((rs) -> {
-			res.start = rs.getLong(1);
-			res.end = rs.getLong(2);
-			return;
-		}, sql);
-		
-		return res;
-	}
-	
-	public static Var var(Long min, Long max, RangeOption... options) {
-		Var res = new Var();
-		for (RangeOption option : options ) {
-			if (option == RangeOption.RANDOM) {
-				res.rnd = new Random();
-			}
-			
-			if (option == RangeOption.SHARED) {
-				//TODO: handle shared & rename "shared" to more reasonable
-				throw new UnsupportedOperationException();
-			}
-		}
-		
-		res.start = min;
-		res.end = max;
-		
-		return res;
-	}
-	
-	public static Var var(Integer min, Integer max, RangeOption... options) {
-		Var res = new Var();
-		for (RangeOption option : options ) {
-			if (option == RangeOption.RANDOM) {
-				res.rnd = new Random();
-			}
-			
-			if (option == RangeOption.SHARED) {
-				//TODO: handle shared & rename "shared" to more reasonable
-				throw new UnsupportedOperationException();
-			}
-		}
-		
-		res.start = min.longValue();
-		res.end = max.longValue();
-		
-		return res;
-	}
+
 	
 	public static Throwable unwrap(Throwable throwable) {
 		Objects.requireNonNull(throwable);

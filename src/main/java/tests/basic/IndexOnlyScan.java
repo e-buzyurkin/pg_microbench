@@ -37,7 +37,7 @@ public class IndexOnlyScan {
 	private static final Logger log = LoggerFactory.getLogger(IndexOnlyScan.class);
 
 	public static Results test(String tableName, Long chunkSize) {
-		Var hash = var("select min(hash), max(hash) from "+tableName, RangeOption.SHARED);
+		Var hash = Var.var("select min(hash), max(hash) from "+tableName, RangeOption.SHARED);
 		
 		String query = "select hash, id from " + tableName + " where hash between ? and ? and status order by hash limit ?";
 		
