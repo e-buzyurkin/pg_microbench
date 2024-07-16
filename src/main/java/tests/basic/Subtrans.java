@@ -11,7 +11,7 @@ public class Subtrans {
 		
 		requireData("select 1 from contend limit 1", "Subtrans.sql",0);
 		
-		Var rnd = var("select min(id), max(id) from contend", RangeOption.RANDOM);
+		Var rnd = Var.var("select min(id), max(id) from contend", RangeOption.RANDOM);
 		
 		parallel((state)-> {
 			begin();

@@ -12,10 +12,10 @@ public class ManySelectQueries {
 		
 		requireData("select 1 from t_tab_10000 limit 1", "ManySelectQueries.sql",0);
 		
-		Var tableID = var(1l,10000l,RangeOption.RANDOM);
-		Var c3 = var(0l,99l,RangeOption.RANDOM);
-		Var id = var(1l,1000l,RangeOption.RANDOM);
-		Var c2 = var(0l,10l,RangeOption.RANDOM);
+		Var tableID = Var.var(1l,10000l,RangeOption.RANDOM);
+		Var c3 = Var.var(0l,99l,RangeOption.RANDOM);
+		Var id = Var.var(1l,1000l,RangeOption.RANDOM);
+		Var c2 = Var.var(0l,10l,RangeOption.RANDOM);
 		
 		parallel((state) -> {
 			sql("select max(c1) from t_tab_" + tableID + " where c3 = ?", c3.get());

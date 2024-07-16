@@ -2,7 +2,6 @@ package bench.v2.strategy;
 
 import bench.v2.DataContext;
 import bench.v2.Database;
-import bench.v2.strategy.StratagyType.StrategyName;
 
 public class PinningStrategy implements IDistributionStrategy {
 	
@@ -11,7 +10,7 @@ public class PinningStrategy implements IDistributionStrategy {
 	
 	@Override
 	public void init(Database db) {
-		sq = db.dataSourceStrategies.getStrategy(StrategyName.SEQUENT);
+		sq = StrategyType.SEQUENT.getStrategy();
 		sq.init(db);
 	}
 

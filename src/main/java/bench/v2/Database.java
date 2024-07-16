@@ -22,34 +22,36 @@ import java.util.concurrent.Callable;
 public class Database {
     private static final Logger log = LoggerFactory.getLogger(Database.class);
 
-    public static Boolean pooling = true;
+    public final Boolean pooling;
 
-    private ThreadLocal<Connection> conn = new ThreadLocal<>();
+    private final ThreadLocal<Connection> conn = new ThreadLocal<>();
 
-    public List<DataSource> ds;
-    public String[] hosts;
+    public volatile List<DataSource> ds;
 
-    public IDistributionStrategy currentStrategy;
+    public final String[] hosts;
+    public final String host;
 
-    public Integer NextDsNum;
+    public volatile IDistributionStrategy currentStrategy;
 
-    public String host;
+
     public int port;
     public String dbName;
     public String userName;
     public String passwd;
     public int poolSize;
-    public long maxLifetime;
+    public long maxLifeTime;
     public int fetchSize = 1000;
 
-    public Database(String host, int port, String dbName, String userName, String passwd, int poolSize, Long maxLifetime) {
+    public Database(String host, int port, String dbName, String userName, String passwd, int poolSize, Long maxLifetime, boolean pooling) {
         this.host = host;
+        this.hosts = host.split(",");
+        this.pooling = pooling;
         this.port = port;
         this.dbName = dbName;
         this.userName = userName;
         this.passwd = passwd;
 
-        this.maxLifetime = maxLifetime;
+        this.maxLifeTime = maxLifetime;
         this.poolSize = poolSize;
     }
 
@@ -57,13 +59,11 @@ public class Database {
         if (ds == null) {
             synchronized (this) {
                 if (ds == null) {
-                    List<DataSource> x = new ArrayList<DataSource>();
-                    NextDsNum = 0;
+                    ds = new ArrayList<>(hosts.length);
                     if (pooling) {
-                        hosts = host.split(",");
                         for (String h : hosts) {
                             HikariConfig config = new HikariConfig();
-                            config.setJdbcUrl("jdbc:postgresql://" + h + ":" + Integer.toString(port) + "/" + dbName + "?prepareThreshold=1&binaryTransfer=false");
+                            config.setJdbcUrl("jdbc:postgresql://" + h + ":" + port + "/" + dbName + "?prepareThreshold=1&binaryTransfer=false");
                             config.setUsername(userName);
                             config.setPassword(passwd);
                             config.setAutoCommit(V2.autoCommit);
@@ -74,12 +74,11 @@ public class Database {
                             config.setConnectionTimeout(300000);
                             config.setConnectionInitSql("set search_path=dev,public");
                             config.setMaximumPoolSize(poolSize);
-                            config.setMaxLifetime(maxLifetime);
-                            x.add(new HikariDataSource(config));
+                            config.setMaxLifetime(maxLifeTime);
+                            ds.add(new HikariDataSource(config));
                         }
 
                     } else {
-                        String[] hosts = host.split(",");
                         for (String h : hosts) {
                             PGSimpleDataSource pgds = new PGSimpleDataSource();
                             pgds.setServerNames(new String[]{h});
@@ -88,11 +87,9 @@ public class Database {
                             pgds.setPassword(passwd);
                             pgds.setPortNumbers(new int[]{port});
                             pgds.setConnectTimeout(1000);
-                            x.add(pgds);
+                            ds.add(pgds);
                         }
                     }
-
-                    ds = x;
                 }
             }
         }
@@ -196,7 +193,7 @@ public class Database {
 
     public boolean insert(String sql, Object... binds) {
         return execute((conn) -> {
-            try (PreparedStatement pstmt = conn.prepareStatement(sql);) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 for (int i = 0; i < binds.length; i++) {
                     pstmt.setObject(i + 1, binds[i]);
                 }
@@ -209,7 +206,7 @@ public class Database {
     public <V> List<V> list(CallableResultSet<V> rsHandler, String sql, Object... binds) {
         return execute((conn) -> {
             List<V> res = new ArrayList<V>();
-            try (PreparedStatement pstmt = conn.prepareStatement(sql);) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setFetchSize(fetchSize);
 
                 for (int i = 0; i < binds.length; i++) {
@@ -230,7 +227,7 @@ public class Database {
 
     public boolean selectSingle(VoidResultSet rsHandler, String sql, Object... binds) {
         return execute((conn) -> {
-            try (PreparedStatement pstmt = conn.prepareStatement(sql);) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setFetchSize(fetchSize);
                 for (int i = 0; i < binds.length; i++) {
                     pstmt.setObject(i + 1, binds[i]);
@@ -260,7 +257,7 @@ public class Database {
     public <K, V> Map<K, V> map(CallableMapResultSet<K, V> rsHandler, String sql, Object... binds) {
         return execute((conn) -> {
             Map<K, V> map = new HashMap<>();
-            try (PreparedStatement pstmt = conn.prepareStatement(sql);) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setFetchSize(fetchSize);
                 for (int i = 0; i < binds.length; i++) {
                     pstmt.setObject(i + 1, binds[i]);
