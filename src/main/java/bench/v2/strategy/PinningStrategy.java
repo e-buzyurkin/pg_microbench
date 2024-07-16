@@ -2,7 +2,7 @@ package bench.v2.strategy;
 
 import bench.v2.DataContext;
 import bench.v2.Database;
-import bench.v2.strategy.Strategies.StrategyName;
+import bench.v2.strategy.StratagyType.StrategyName;
 
 public class PinningStrategy implements IDistributionStrategy {
 	

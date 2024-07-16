@@ -37,7 +37,7 @@ import bench.v2.Snap;
 import bench.v2.Var;
 import bench.v2.WorkerState;
 import bench.v2.WorkerUnit;
-import bench.v2.strategy.Strategies.StrategyName;
+import bench.v2.strategy.StrategyType;
 
 public class V2 {
 	
@@ -188,7 +188,7 @@ public class V2 {
 						
 			params.workers = Integer.parseInt(cmd.getOptionValue("w", DEFWORKERS));
 			params.concurrency = Integer.parseInt(cmd.getOptionValue("c", DEFCONCURRENCY));
-			params.strategy = StrategyName.valueOf(cmd.getOptionValue("s",DEFSTRATEGY).toUpperCase());
+			params.strategy = StrategyType.valueOf(cmd.getOptionValue("s",DEFSTRATEGY).toUpperCase());
 			params.volume = Integer.parseInt(cmd.getOptionValue("v", DEFVOLUME));
 			params.runType = Phase.valueOf(cmd.getOptionValue("o", DEFRUNTYPE));
 			

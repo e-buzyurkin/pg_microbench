@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import bench.v2.DataContext;
 import bench.v2.Database;
-import bench.v2.strategy.Strategies.StrategyName;
+import bench.v2.strategy.StratagyType.StrategyName;
 import bench.v2.strategy.shardman.Hash;
 
 public class ShardmanWiseStrategy implements IDistributionStrategy {
