@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class Database {
+public class Database implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(Database.class);
 
     public final Boolean pooling;
@@ -62,32 +62,13 @@ public class Database {
                     ds = new ArrayList<>(hosts.length);
                     if (pooling) {
                         for (String h : hosts) {
-                            HikariConfig config = new HikariConfig();
-                            config.setJdbcUrl("jdbc:postgresql://" + h + ":" + port + "/" + dbName + "?prepareThreshold=1&binaryTransfer=false");
-                            config.setUsername(userName);
-                            config.setPassword(passwd);
-                            config.setAutoCommit(V2.autoCommit);
-                            config.addDataSourceProperty("cachePrepStmts", "true");
-                            config.addDataSourceProperty("prepStmtCacheSize", "250");
-                            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-                            config.setInitializationFailTimeout(1);
-                            config.setConnectionTimeout(300000);
-                            config.setConnectionInitSql("set search_path=dev,public");
-                            config.setMaximumPoolSize(poolSize);
-                            config.setMaxLifetime(maxLifeTime);
-                            ds.add(new HikariDataSource(config));
+                            HikariDataSource dataSource = getHikariDataSource(h);
+                            ds.add(dataSource);
                         }
-
                     } else {
                         for (String h : hosts) {
-                            PGSimpleDataSource pgds = new PGSimpleDataSource();
-                            pgds.setServerNames(new String[]{h});
-                            pgds.setDatabaseName(dbName);
-                            pgds.setUser(userName);
-                            pgds.setPassword(passwd);
-                            pgds.setPortNumbers(new int[]{port});
-                            pgds.setConnectTimeout(1000);
-                            ds.add(pgds);
+                            PGSimpleDataSource dataSource = getPgSimpleDataSource(h);
+                            ds.add(dataSource);
                         }
                     }
                 }
@@ -105,6 +86,34 @@ public class Database {
         }
 
         return ds.get(currentStrategy.getDataSourceID(ctx));
+    }
+
+    private PGSimpleDataSource getPgSimpleDataSource(String host) {
+        PGSimpleDataSource pgds = new PGSimpleDataSource();
+        pgds.setServerNames(new String[]{host});
+        pgds.setDatabaseName(dbName);
+        pgds.setUser(userName);
+        pgds.setPassword(passwd);
+        pgds.setPortNumbers(new int[]{port});
+        pgds.setConnectTimeout(1000);
+        return pgds;
+    }
+
+    private HikariDataSource getHikariDataSource(String host) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?prepareThreshold=1&binaryTransfer=false");
+        config.setUsername(userName);
+        config.setPassword(passwd);
+        config.setAutoCommit(V2.autoCommit);
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.setInitializationFailTimeout(1);
+        config.setConnectionTimeout(300000);
+        config.setConnectionInitSql("set search_path=dev,public");
+        config.setMaximumPoolSize(poolSize);
+        config.setMaxLifetime(maxLifeTime);
+        return new HikariDataSource(config);
     }
 
     public DataSource getDataSource() {
@@ -273,6 +282,7 @@ public class Database {
         });
     }
 
+    @Override
     public void close() throws SQLException {
         // Close connections from ThreadLocal
         Connection localConn = conn.get();
