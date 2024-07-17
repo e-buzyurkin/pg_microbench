@@ -1,13 +1,8 @@
 package tests.basic;
 
-import bench.v2.histogram.Histogram2CSV;
+import bench.v2.histogram.HistogramUtils;
 import bench.v2.query.SQL;
 import org.HdrHistogram.Histogram;
-
-import javax.sql.DataSource;
-
-import java.sql.Connection;
-import java.sql.SQLException;
 
 import static bench.V2.args;
 import static bench.V2.db;
@@ -18,19 +13,24 @@ public class Latency {
 
         args(args);
 
-        try (Connection connection = db.getDataSource().getConnection()) {
-            SQL s = new SQL(connection);
+        try (SQL s = new SQL(db.getDataSource().getConnection())) {
 
-            for (int i = 0; i < 10000; i++) {
-                s.sql("select 1", histogram);
+            int n = 5000;
+
+            for (int i = 1; i <= 100; i++) {
+                for (int j = 0; j < n / 100; j++) {
+                    s.sql("select 1", histogram);
+                }
+                System.out.println("Done: " + i + "%");
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
 
         System.out.println(histogram.getTotalCount());
-        Histogram2CSV.write(histogram, "hist.csv");
+
+        HistogramUtils.hist2png(histogram, "hist.csv", "hist.png");
     }
 }

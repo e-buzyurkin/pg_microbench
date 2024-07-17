@@ -3,14 +3,13 @@ package bench.v2.query;
 import lombok.RequiredArgsConstructor;
 import org.HdrHistogram.Histogram;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 @RequiredArgsConstructor
-public class SQL {
+public class SQL implements AutoCloseable {
     private final Connection connection;
     private final int fetchSize = 1000;
 
@@ -29,20 +28,7 @@ public class SQL {
         }
     }
 
-    public void sql(String sql) {
-        try (Statement statement = connection.createStatement()) {
 
-
-            long start = System.nanoTime();
-            statement.execute(sql);
-            long end = System.nanoTime();
-
-            System.out.println("Latency: " + (end - start) + " ns");
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
     public void sql(String sql, Histogram latencyHist) {
         try (Statement statement = connection.createStatement()) {
 
@@ -53,5 +39,10 @@ public class SQL {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        connection.close();
     }
 }
