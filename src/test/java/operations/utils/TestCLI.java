@@ -1,7 +1,6 @@
 package operations.utils;
 
 import static bench.V2.args;
-import static bench.V2.db;
 
 public class TestCLI {
 

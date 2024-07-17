@@ -1,5 +1,8 @@
 package bench;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -7,7 +10,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.HdrHistogram.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -59,6 +62,10 @@ public class V2 {
 	private static final String DEFSTRATEGY="none";
 	private static final int fetchSize = 1000;
 	private static ScheduledExecutorService pool;
+
+	private static AtomicHistogram histogram = 
+							new AtomicHistogram(10000000, 
+						3);
 	
 	public enum RangeOption{
 		RANDOM,
@@ -72,7 +79,17 @@ public class V2 {
 	public static Boolean sessionAffinity = true;
 	public static Boolean autoCommit = true;
 	
-	public static AtomicBoolean dbGen = new AtomicBoolean(false);
+	private static AtomicBoolean dbGen = new AtomicBoolean(false);
+
+	private static void printHistogramInFile(PrintStream stream) {
+		RecordedValuesIterator iterator = new RecordedValuesIterator(histogram);
+
+		iterator.reset();
+		while (iterator.hasNext()) {
+			HistogramIterationValue val = iterator.next();
+			stream.println(val.getValueIteratedTo());
+		}
+	}
 
 	public static void sql(String sql, Object... binds) {
 		db.<Boolean>execute((conn) -> {
@@ -119,7 +136,7 @@ public class V2 {
 		return select("explain (analyze, verbose, buffers, costs off) " + sql, binds);
 	}
 
-	public static void explain(Logger log, String sql, Object... binds) {
+	public static void explain(Logger log2, String sql, Object... binds) {
 		List<String> lines = select("explain (analyze, verbose, buffers) " + sql, binds);
 		if (log != null)
 			log.info("Actual plan \n{}\n{}\n{}", lineSep, String.join("\n", lines), lineSep);
@@ -195,7 +212,8 @@ public class V2 {
 			params.txlimit = new AtomicLong(Long.parseLong(cmd.getOptionValue("T", "-1")));
             params.isProfiling = cmd.hasOption("profiling");
 			
-			db = new Database(cmd.getOptionValue("h"), 
+			db = new Database(
+					cmd.getOptionValue("h"), 
 					Integer.parseInt(cmd.getOptionValue("p",DEFPGPORT)),
 					cmd.getOptionValue("d","postgres"),
 					cmd.getOptionValue("U","postgres"),
@@ -203,7 +221,7 @@ public class V2 {
 					params.workers,
 					Long.parseLong(cmd.getOptionValue("l", "0")) * 1000L,
 					true
-					);
+			);
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("java -Xmx256m -jar pg_selectonly.jar", opt, true);
@@ -230,31 +248,39 @@ public class V2 {
 		}
 	}
 	
-	public static void ctx(String tableName, List<Object> keyValues, WorkerState st, final WorkerUnit x) {
+	public static void ctx(String tableName, 
+						   List<Object> keyValues, 
+						   WorkerState workerState, 
+						   final WorkerUnit workerUnit) 
+	{
 		if (db.get() != null) {
 			throw new RuntimeException("Connection is already defined");
 		}
 		try (Connection cc = db.getDataSource(new DataContext(tableName, keyValues)).getConnection()){
 			db.push(cc);
-			x.iterate(st);
+			workerUnit.iterate(workerState);
 			db.pop();
 		} catch (SQLException e) {
 			throw new RuntimeException("Error on commit", e);
 		}
 	}
 	
-	public static void transaction(String tableName, List<Object> keyValues, WorkerState st, final WorkerUnit x) {
+	public static void transaction(String tableName, 
+                                   List<Object> keyValues, 
+                                   WorkerState workerState, 
+                                   final WorkerUnit workerUnit) 
+	{	
+		Connection c = db.get();
 		try {
-			Connection c = db.get();
 			if (c != null) {
 				c.setAutoCommit(false);
-				x.iterate(st);
+				workerUnit.iterate(workerState);
 				c.commit();
 			} else {
-				try (Connection cc = db.getDataSource(new DataContext(tableName, keyValues)).getConnection()){
+				try (Connection cc = db.getDataSource(new DataContext(tableName, keyValues)).getConnection()) {
 					db.push(cc);
 					cc.setAutoCommit(false);
-					x.iterate(st);
+					workerUnit.iterate(workerState);
 					cc.commit();
 					db.pop();
 				}
@@ -264,18 +290,20 @@ public class V2 {
 		}
 	}
 	
-	public static void transaction(WorkerState st, final WorkerUnit x) {
+	public static void transaction(WorkerState workerState, 
+								   final WorkerUnit workerUnit) 
+	{
+		Connection c = db.get();
 		try {
-			Connection c = db.get();
 			if (c != null) {
 				c.setAutoCommit(false);
-				x.iterate(st);
+				workerUnit.iterate(workerState);
 				c.commit();
 			} else {
-				try (Connection cc = db.getDataSource().getConnection()){
+				try (Connection cc = db.getDataSource().getConnection()) {
 					db.push(cc);
 					cc.setAutoCommit(false);
-					x.iterate(st);
+					workerUnit.iterate(workerState);
 					cc.commit();
 					db.pop();
 				}
@@ -285,33 +313,63 @@ public class V2 {
 		}
 	}
 	
-	public static Results parallel(final WorkerUnit x) {
+	public static Results parallel(final WorkerUnit workerUnit) {
 		List<Snap> metrics = new ArrayList<>(1000);
-		int period = 1000;
+		int period = 100;
 		long durNs;
 		String logResultsIntro;
 		
-		if ((params.runType.compareTo(Phase.GENERATE) >= 0) && dbGen.get()) {
-			log.info("Starting {} workers for generate {} rows", params.workers, params.volume);
-			durNs = parallelInternal(x, params.volume, Integer.MAX_VALUE, metrics, period, false);
-			logResultsIntro = "Generation completed after";
+		switch (params.runType) {
+			case GENERATE:
+				if (!dbGen.get()) {
+					return null;
+				}
+				log.info("Starting {} workers for generate {} rows", params.workers, params.volume);
+				durNs = parallelInternal(workerUnit, params.volume, 
+											Integer.MAX_VALUE, metrics, 
+											period, false);
+				logResultsIntro = "Generation completed after";
+				break;
+
+			case EXECUTE:
+				log.info("Starting {} workers for {} seconds", params.workers, params.timeout);
+				durNs = parallelInternal(workerUnit, 0, 
+										params.timeout, metrics, 
+										period, verbosity);
+				logResultsIntro = "Test completed after";
+				break;
+				
+			default:
+				return null;
 		}
-		else if (params.runType.compareTo(Phase.EXECUTE) >= 0) {
-			log.info("Starting {} workers for {} seconds", params.workers, params.timeout);
-			durNs = parallelInternal(x, 0, params.timeout, metrics, period, verbosity);
-			logResultsIntro = "Test completed after";
-		}
-		else
-			return null;
 		
 		if (metrics.size() > 0) {
 			Results r = new Results(metrics, period, durNs);
 			r.logSummary(log, logResultsIntro);
+
+			try {
+				histogram.outputPercentileDistribution(new PrintStream(new File("histogram.hdr")), 5, 1.0);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				printHistogramInFile(new PrintStream(new File("histo.txt")));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
 			return r;
 		} else return null;
 	}
 	
-	private static long parallelInternal(final WorkerUnit x, long iterationLimit, int timeout, List<Snap> snaps, int period, boolean monVerbose) {
+	private static long parallelInternal(final WorkerUnit x, 
+										 long iterationLimit, 
+										 int timeout, 
+										 List<Snap> snaps, 
+										 int period, 
+										 boolean monVerbose) 
+	{
 		pool = Executors.newScheduledThreadPool(params.workers);
 		ScheduledExecutorService mon = Executors.newScheduledThreadPool(1);
 
@@ -395,18 +453,15 @@ public class V2 {
 				for (WorkerState st : states) {
 					iterations += st.iterationsDone;
 				}
-				Long d = System.nanoTime() - n;
-				Long delta = iterations - curIter.get();
-				if (monVerbose)
-					log.info("+{}  (took {} ns)", delta, d);
 				curIter.set(iterations);
 				
 				Snap p = new Snap();
 				p.ts = n - start;
 				p.iterations = iterations;
-				p.delta = delta;
-				p.tookNs = d;
 				
+				Long tps = iterations * 1000000000 / p.ts;
+				histogram.recordValue(tps);
+
 				snaps.add(p);
 			}, initialDelay, period, TimeUnit.MILLISECONDS);
 		}
@@ -481,9 +536,16 @@ public class V2 {
 		requireData(checkSQL, psql);
 	}
 	
-	public static void requireData(String checkSQL, String filename, String username, String password, String database, Integer hostNum) {
+	public static void requireData(String checkSQL, 
+								   String filename, 
+								   String username, 
+								   String password, 
+								   String database, 
+								   Integer hostNum) 
+	{
 		Callable<Void> psql = () -> {
-			log.info("Execute SQL script {} via psql host {} under user {} in database {}", filename, db.hosts[hostNum], username, database);
+			log.info("Execute SQL script {} via psql host {} under user {} in database {}", 
+											filename, db.hosts[hostNum], username, database);
 			PSQL.executeFile(filename, username, password, database, hostNum);
 			log.info("Completed SQL script");
 			return null;
@@ -532,7 +594,11 @@ public class V2 {
 		db.<Boolean>execute(checkStmt, handleOnError);
 	}
 	
-	public static void assertSimilar(Results a, Results b, String msgFormat, Object... params) {
+	public static void assertSimilar(Results a, 
+									 Results b, 
+									 String msgFormat, 
+									 Object... params) 
+	{
 		if (!a.similar(b)) {
 			log.error("TEST FAILED: " + msgFormat, params);
 		} else {
@@ -541,24 +607,28 @@ public class V2 {
 	}
 	
 	public static void logResults(Results res) {
-		log.info("Test results: last 5 sec {} tps, overall {} tps, {} iterations", res.tpsLast5sec, res.tps, res.iterations);
+		log.info("Test results: last 5 sec {} tps, overall {} tps, {} iterations", 
+										res.tpsLast5sec, res.tps, res.iterations);
 	}
 
 	public static void closeConnection() {
-		if (db != null) {
-			try {
-				if (pool != null) {
-					pool.shutdown();
-					pool.awaitTermination(10, TimeUnit.SECONDS);
-				}
-
-				db.close();
-				log.info("Database connection closed successfully.");
-			} catch (SQLException e) {
-				log.error("Failed to close database connection.", e);
-			} catch (InterruptedException e) {
-				log.error("Thread was interrupted while waiting for thread pool termination.", e);
-			}
+		if (db == null) {
+			return;
 		}
+
+		try {
+			if (pool != null) {
+				pool.shutdown();
+				pool.awaitTermination(10, TimeUnit.SECONDS);
+			}
+
+			db.close();
+			log.info("Database connection closed successfully.");
+		} catch (SQLException e) {
+			log.error("Failed to close database connection.", e);
+		} catch (InterruptedException e) {
+			log.error("Thread was interrupted while waiting for thread pool termination.", e);
+		}
+		
 	}
 }

@@ -4,6 +4,4 @@ public class Snap {
 
 	public Long ts;
 	public Long iterations;
-	public Long delta;
-	public Long tookNs;
 }

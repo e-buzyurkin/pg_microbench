@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import operations.utils.TestUtils;
 
-import static bench.V2.requireData;
-
 public class TestCTEScan extends TestPlan  {
     private static final Logger logger = LoggerFactory.getLogger(TestCTEScan.class);
     private static final String expectedPlanType = "CTE Scan";

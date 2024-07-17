@@ -30,13 +30,14 @@ public class Var {
     public static Var var(String sql, V2.RangeOption... options) {
         Var res = new Var();
         for (V2.RangeOption option : options ) {
-            if (option == V2.RangeOption.RANDOM) {
-                res.rnd = new Random();
-            }
+            switch (option) {
+                case RANDOM:
+                    res.rnd = new Random();
+                    break;
 
-            if (option == V2.RangeOption.SHARED) {
-                //TODO: handle shared & rename "shared" to more reasonable
-                throw new UnsupportedOperationException();
+                case SHARED:
+                    //TODO: handle shared & rename "shared" to more reasonable
+                    throw new UnsupportedOperationException();
             }
         }
 
@@ -53,13 +54,14 @@ public class Var {
     public static Var var(Long min, Long max, V2.RangeOption... options) {
         Var res = new Var();
         for (V2.RangeOption option : options ) {
-            if (option == V2.RangeOption.RANDOM) {
-                res.rnd = new Random();
-            }
+            switch (option) {
+                case RANDOM:
+                    res.rnd = new Random();
+                    break;
 
-            if (option == V2.RangeOption.SHARED) {
-                //TODO: handle shared & rename "shared" to more reasonable
-                throw new UnsupportedOperationException();
+                case SHARED:
+                    //TODO: handle shared & rename "shared" to more reasonable
+                    throw new UnsupportedOperationException();
             }
         }
 
@@ -72,13 +74,14 @@ public class Var {
     public static Var var(Integer min, Integer max, V2.RangeOption... options) {
         Var res = new Var();
         for (V2.RangeOption option : options ) {
-            if (option == V2.RangeOption.RANDOM) {
-                res.rnd = new Random();
-            }
+            switch (option) {
+                case RANDOM:
+                    res.rnd = new Random();
+                    break;
 
-            if (option == V2.RangeOption.SHARED) {
-                //TODO: handle shared & rename "shared" to more reasonable
-                throw new UnsupportedOperationException();
+                case SHARED:
+                    //TODO: handle shared & rename "shared" to more reasonable
+                    throw new UnsupportedOperationException();
             }
         }
 
