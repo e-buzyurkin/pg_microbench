@@ -496,17 +496,16 @@ public class V2 {
 	}
 	
 	private static String getDatabaseSettingValue(String gucName) {
-		//TODO: fetch value from pg_settings
-		return "";
+		return selectOne(String.format("SHOW %s;", gucName));
 	}
 	
-	public static void requireSettings(String gucName, Comparable<String> comparator) {
-		String value = getDatabaseSettingValue(gucName);
-		if (comparator.compareTo(value) == 0) {
+	public static void requireSettings(String gucName, String newValue) {
+		String curValue = getDatabaseSettingValue(gucName);
+		if (curValue == newValue) {
 			return;
 		}
 		
-		//TODO: set value
+		sql(String.format("SET %s TO '%s'", gucName, newValue));
 	}
 	
 	public static void psql(String filename, Integer hostNum) {
