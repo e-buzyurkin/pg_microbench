@@ -220,7 +220,7 @@ public class V2 {
 					cmd.getOptionValue("P","postgres"),
 					params.workers,
 					Long.parseLong(cmd.getOptionValue("l", "0")) * 1000L,
-			true
+					true
 			);
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
