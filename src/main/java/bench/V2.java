@@ -220,7 +220,7 @@ public class V2 {
 					cmd.getOptionValue("P","postgres"),
 					params.workers,
 					Long.parseLong(cmd.getOptionValue("l", "0")) * 1000L,
-					true
+			true
 			);
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
@@ -266,10 +266,10 @@ public class V2 {
 	}
 	
 	public static void transaction(String tableName, 
-								   List<Object> keyValues, 
-								   WorkerState workerState, 
-								   final WorkerUnit workerUnit) 
-	{
+                                   List<Object> keyValues, 
+                                   WorkerState workerState, 
+                                   final WorkerUnit workerUnit) 
+	{	
 		Connection c = db.get();
 		try {
 			if (c != null) {
@@ -277,12 +277,13 @@ public class V2 {
 				workerUnit.iterate(workerState);
 				c.commit();
 			} else {
-				c = db.getDataSource(new DataContext(tableName, keyValues)).getConnection();
-				db.push(c);
-				c.setAutoCommit(false);
-				workerUnit.iterate(workerState);
-				c.commit();
-				db.pop();
+				try (Connection cc = db.getDataSource(new DataContext(tableName, keyValues)).getConnection()) {
+					db.push(cc);
+					cc.setAutoCommit(false);
+					workerUnit.iterate(workerState);
+					cc.commit();
+					db.pop();
+				}
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error on commit", e);
@@ -299,12 +300,13 @@ public class V2 {
 				workerUnit.iterate(workerState);
 				c.commit();
 			} else {
-				c = db.getDataSource().getConnection();
-				db.push(c);
-				c.setAutoCommit(false);
-				workerUnit.iterate(workerState);
-				c.commit();
-				db.pop();
+				try (Connection cc = db.getDataSource().getConnection()) {
+					db.push(cc);
+					cc.setAutoCommit(false);
+					workerUnit.iterate(workerState);
+					cc.commit();
+					db.pop();
+				}
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error on commit", e);
