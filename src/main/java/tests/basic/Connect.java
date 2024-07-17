@@ -8,7 +8,10 @@ public class Connect {
 	
 	public static void main(String[] args) {
 		// We want to create connections w/o pooling
-		Database.pooling = false;
+
+		// todo
+		// Database.pooling = false;
+
 		args(args);
 				
 		parallel((state) -> {

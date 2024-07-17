@@ -33,7 +33,7 @@ public class SelectOnly {
 		});
 		
 		
-		Var aid = var("select min(aid), max(aid) from accounts", RangeOption.RANDOM);
+		Var aid = Var.var("select min(aid), max(aid) from accounts", RangeOption.RANDOM);
 		
 		autoCommit = true;
 		parallel((state) -> {
