@@ -42,7 +42,15 @@ public class Database {
     public long maxLifeTime;
     public int fetchSize = 1000;
 
-    public Database(String host, int port, String dbName, String userName, String passwd, int poolSize, Long maxLifetime, boolean pooling) {
+    public Database(String host, 
+					int port, 
+					String dbName, 
+					String userName, 
+					String passwd, 
+					int poolSize, 
+					Long maxLifetime,
+					 boolean pooling) 
+	{
         this.host = host;
         this.hosts = host.split(",");
         this.pooling = pooling;
@@ -147,7 +155,6 @@ public class Database {
                 return c.call(conn.get());
             }
         } catch (SQLException e) {
-
             log.info("{}", e.getMessage());
             if (e.getMessage().contains("could not serialize access due to concurrent update"))
                 return null;
@@ -234,9 +241,9 @@ public class Database {
                 }
 
                 try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        rsHandler.call(rs);
-                        return true;
+                if (rs.next()) {
+                    rsHandler.call(rs);
+                    return true;
                     }
                 }
             }
@@ -264,8 +271,8 @@ public class Database {
                 }
 
                 try (ResultSet rs = pstmt.executeQuery()) {
-                    while (rs.next()) {
-                        rsHandler.call(rs, map);
+                while (rs.next()) {
+                    rsHandler.call(rs, map);
                     }
                 }
             }

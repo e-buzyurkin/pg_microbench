@@ -10,7 +10,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -222,7 +221,7 @@ public class V2 {
 					params.workers,
 					Long.parseLong(cmd.getOptionValue("l", "0")) * 1000L,
 					true
-					);
+			);
 		} catch (ParseException e) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("java -Xmx256m -jar pg_selectonly.jar", opt, true);
@@ -323,13 +322,13 @@ public class V2 {
 				if (!dbGen.get()) {
 					return null;
 				}
-
 				log.info("Starting {} workers for generate {} rows", params.workers, params.volume);
 				durNs = parallelInternal(workerUnit, params.volume, 
 											Integer.MAX_VALUE, metrics, 
 											period, false);
 				logResultsIntro = "Generation completed after";
 				break;
+
 			case EXECUTE:
 				log.info("Starting {} workers for {} seconds", params.workers, params.timeout);
 				durNs = parallelInternal(workerUnit, 0, 
@@ -337,6 +336,7 @@ public class V2 {
 										period, verbosity);
 				logResultsIntro = "Test completed after";
 				break;
+				
 			default:
 				return null;
 		}
